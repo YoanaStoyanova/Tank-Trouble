@@ -3,3 +3,5 @@ node_modules/
 tanktrouble/node_modules/
 tanktrouble/external/node_modules/
 Server/node_modules/
+.idea
+.vscode
