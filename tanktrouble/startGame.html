@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Tank Trouble</title>
+		<link rel="shortcut icon" href="assets/favicon.ico" >
+		<link rel="stylesheet" type="text/css" href="css/main.css" />
+	</head>
+	<body id="body">
+		<div id="container">
+			<div id="inner">
+				<header>
+					<h1><strong>Tank Trouble</strong></h1>
+				</header>
+				<hr/>
+				<h2 class="description">A two player tank game in Javascript.</h2>
+				<hr/>
+				<!-- ko if: game.player1() !== null && game.player2() !== null -->
+				<p id="scores" class="description">
+					Player I : <span id="score1" data-bind="text: game.player1().score"></span>
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					Player II : <span id="score2" data-bind="text: game.player2().score"></span>
+				</p>
+				<!-- /ko -->
+				<div id="arena" data-bind="fightArena:game">
+					<div id="startScreen" data-bind="visible:game.isStartScreen()">
+						<div id="startWrapper">
+							<h2 class="description arenaHeader">Controls</h2>
+							<div id="controlsWrapper">
+								<div id="player1" class="player">
+									<h2 class="description">Player I</h2>
+									<div id="controls1">
+										<a class="button controls">↑</a>
+										<div class="centerRow">
+											<a class="button controls float">←</a>
+											<a class="button controls float fire">M</a>
+											<a class="button controls float">→</a>
+										</div>
+										<a class="button controls down">↓</a>
+									</div>
+								</div>
+								<div id="player2" class="player">
+									<h2 class="description">Player II</h2>
+									<div id="controls1">
+										<a class="button controls">E</a>
+										<div class="centerRow">
+											<a class="button controls float">S</a>
+											<a class="button controls float fire">Q</a>
+											<a class="button controls float">F</a>
+										</div>
+										<a class="button controls down">D</a>
+									</div>
+								</div>
+							</div>
+							<a id="start" class="button">Start Game</a>
+							<h2 class="description">(or press Enter)</h2>
+						</div>
+					</div>
+					<div id="restartScreen" data-bind="visible: game.restartScreen()">
+						<div id="restartWrapper">
+							<h2 class="description">Player <span id="winner"></span> Wins</h2>
+							<a id="restart" class="button">Play Again</a>
+							<h2 class="description">(or press Enter)</h2>
+						</div>
+					</div>
+				</div>
+				<p id="instructions" class="description">HOW TO PLAY: Use the controls to move your tank around and fire bullets. You have a maximum of 5 bullets after which you have to wait for one of the bullets to die. Each bullet lasts for 20 seconds. If any of the bullets hit your tank, you die.</p>
+				<hr/>
+				<footer>
+					<p class="description">Made using the <a href="http://en.wikipedia.org/wiki/Force_(Star_Wars)" target="_blank">force</a> by <a href="https://github.com/sameergoyal" target="_blank">Sameer Goyal</a>.</p>
+				</footer>
+			</div>
+		</div>
+		<script src="external/node_modules/socket.io-client/dist/socket.io.js" type="text/javascript"></script>
+		<script src="external/node_modules//knockout/build/output/knockout-latest.js" type="text/javascript"></script>
+		<script src="external/phaser.js" type="text/javascript"></script>
+		<script src="./js/utils/utils.js" type="text/javascript"></script>
+		<script src="./js/Game/game.js" type="text/javascript"></script>
+		<script src="js/Game/FightArenaBinding.js" type="text/javascript"></script>
+		<script src="js/main.js" type="text/javascript"></script>
+		<script type="text/javascript">
+			var main = new Main();
+			ko.applyBindings(main,document.getElementById("body"));
+		</script>
+	</body>
+</html>
