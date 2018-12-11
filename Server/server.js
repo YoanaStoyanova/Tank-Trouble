@@ -16,6 +16,12 @@ app.get('/', function(req, res){
     req.resume();
 });
 
+app.post("/login",function (req, res) {
+    console.log('POST request to login');
+    res.send('POST request to login');
+    res.end();
+})
+
 var players=[];
 
 function addNewPlayer(socket){
