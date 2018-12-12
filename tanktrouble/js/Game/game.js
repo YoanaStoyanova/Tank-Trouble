@@ -34,6 +34,7 @@ var Game = /** @class */ (function () {
         this.isGameOver = ko.observable(false);
         this.isStartScreen = ko.observable(true);
         this.restartScreen = ko.observable(false);
+        this.grid = ko.observable(null);
         this.opponentMove = function (data) {
             console.log(data);
             console.log("opponent moved");
@@ -63,6 +64,11 @@ var Game = /** @class */ (function () {
         socket.on('connect', function () {
             _this.socket.on("playerMove", _this.opponentMove);
             _this.socket.on("fireBullet", _this.opponentFire);
+            _this.socket.on("gridReady", function (generatedGrid) {
+                console.log(grid);
+                _this.ensureConnectivity();
+                _this.drawGrid(generatedGrid);
+            });
         });
     }
     Game.prototype.getRandomBool = function () {
@@ -174,21 +180,22 @@ var Game = /** @class */ (function () {
         this.connectedList.push(0);
         this.ddfs(0, 0);
     };
-    Game.prototype.drawGrid = function () {
-        var widthPerRect = this.arenaWidth / this.maxVlines;
-        var heightPerRect = this.arenaHeight / this.maxHlines;
-        for (var i = 0; i < this.maxHlines + 1; i++) {
-            for (var j = 0; j < this.maxVlines + 1; j++) {
-                if (this.horGrid[i][j] == true) {
-                    this.hLines[i][j] = grid.create(widthPerRect * j, (heightPerRect * i), 'hLine');
-                    this.hLines[i][j].body.immovable = true;
+    Game.prototype.drawGrid = function (generatedGridInfo) {
+        // var widthPerRect = this.arenaWidth / this.maxVlines;
+        // var heightPerRect = this.arenaHeight / this.maxHlines;
+        for (var i = 0; i < generatedGridInfo.maxHlines + 1; i++) {
+            for (var j = 0; j < generatedGridInfo.maxVlines + 1; j++) {
+                if (generatedGridInfo.horGrid[i][j] == true) {
+                    generatedGridInfo.hLines[i][j] = grid.create(generatedGridInfo.widthPerRect * j, (generatedGridInfo.heightPerRect * i), 'hLine');
+                    generatedGridInfo.hLines[i][j].body.immovable = true;
                 }
-                if (this.verGrid[i][j] == true) {
-                    this.vLines[i][j] = grid.create((widthPerRect * j), heightPerRect * i, 'vLine');
-                    this.vLines[i][j].body.immovable = true;
+                if (generatedGridInfo.verGrid[i][j] == true) {
+                    generatedGridInfo.vLines[i][j] = grid.create((generatedGridInfo.widthPerRect * j), generatedGridInfo.heightPerRect * i, 'vLine');
+                    generatedGridInfo.vLines[i][j].body.immovable = true;
                 }
             }
         }
+        this.grid(generatedGridInfo);
     };
     Game.prototype.captureKeys = function (controls) {
         this.keyboard.addKeyCapture(controls.up);
@@ -284,13 +291,13 @@ var Game = /** @class */ (function () {
     Game.prototype.create = function () {
         game.stage.backgroundColor = "#FFFFFF";
         game.physics.startSystem(Phaser.Physics.ARCADE);
-        this.generateRandomGrid();
-        this.ensureConnectivity();
+        // this.generateRandomGrid();
+        // this.ensureConnectivity();
         grid = game.add.group();
         grid.enableBody = true;
         this.bullets = game.add.group();
         this.bullets.enableBody = true;
-        this.drawGrid();
+        // this.drawGrid();
         this.player1(this.createPlayer(this.player1(), 20, 20, "tank1", true, control1));
         this.player2(this.createPlayer(this.player2(), 780, 480, 'tank2', false, control2));
         this.keyboard = game.input.keyboard;
@@ -307,7 +314,7 @@ var Game = /** @class */ (function () {
         this.bullets.destroy(true, true);
         this.generateRandomGrid();
         this.ensureConnectivity();
-        this.drawGrid();
+        // this.drawGrid();
         this.player1(this.createTank(this.player1(), 20, 20, 'tank1', true));
         this.player2(this.createTank(this.player2(), 780, 480, 'tank2', false));
         this.player1().controls = control1;

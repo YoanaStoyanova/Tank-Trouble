@@ -14,23 +14,23 @@ ko.bindingHandlers.fightArena = {
             }
         });
         document.addEventListener("keydown", debounce(function (event) {
-            if (event.which == 38) {
+            if (event.which == 38) { // up
                 console.log("up");
                 gameVM.notifyMovement();
             }
-            if (event.which == 37) {
+            if (event.which == 37) { //left
                 console.log("up");
                 gameVM.notifyMovement();
             }
-            if (event.which == 39) {
+            if (event.which == 39) { //right
                 console.log("up");
                 gameVM.notifyMovement();
             }
-            if (event.which == 40) {
+            if (event.which == 40) { //down
                 console.log("up");
                 gameVM.notifyMovement();
             }
-            if (event.which == 32) {
+            if (event.which == 32) { // space bar
                 console.log("space bar");
                 gameVM.notifyFire();
             }

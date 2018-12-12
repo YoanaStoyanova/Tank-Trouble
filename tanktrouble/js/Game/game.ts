@@ -42,10 +42,17 @@ class Game {
     public vLines;
     public connectedList;
 
+    public grid = ko.observable(null);
+
     constructor(private socket) {
         socket.on('connect', () => {
             this.socket.on("playerMove",this.opponentMove);
             this.socket.on("fireBullet",this.opponentFire);
+            this.socket.on("gridReady",(generatedGrid)=>{
+                console.log(grid);
+                this.ensureConnectivity();
+                this.drawGrid(generatedGrid);
+            });
         });
     }
 
@@ -179,21 +186,22 @@ class Game {
         this.ddfs(0, 0);
     }
 
-    private drawGrid() {
-        var widthPerRect = this.arenaWidth / this.maxVlines;
-        var heightPerRect = this.arenaHeight / this.maxHlines;
-        for (var i = 0; i < this.maxHlines + 1; i++) {
-            for (var j = 0; j < this.maxVlines + 1; j++) {
-                if (this.horGrid[i][j] == true) {
-                    this.hLines[i][j] = grid.create(widthPerRect * j, (heightPerRect * i), 'hLine');
-                    this.hLines[i][j].body.immovable = true;
+    private drawGrid(generatedGridInfo) {
+        // var widthPerRect = this.arenaWidth / this.maxVlines;
+        // var heightPerRect = this.arenaHeight / this.maxHlines;
+        for (var i = 0; i < generatedGridInfo.maxHlines + 1; i++) {
+            for (var j = 0; j < generatedGridInfo.maxVlines + 1; j++) {
+                if (generatedGridInfo.horGrid[i][j] == true) {
+                    generatedGridInfo.hLines[i][j] = grid.create(generatedGridInfo.widthPerRect * j, (generatedGridInfo.heightPerRect * i), 'hLine');
+                    generatedGridInfo.hLines[i][j].body.immovable = true;
                 }
-                if (this.verGrid[i][j] == true) {
-                    this.vLines[i][j] = grid.create((widthPerRect * j), heightPerRect * i, 'vLine');
-                    this.vLines[i][j].body.immovable = true;
+                if (generatedGridInfo.verGrid[i][j] == true) {
+                    generatedGridInfo.vLines[i][j] = grid.create((generatedGridInfo.widthPerRect * j), generatedGridInfo.heightPerRect * i, 'vLine');
+                    generatedGridInfo.vLines[i][j].body.immovable = true;
                 }
             }
         }
+        this.grid(generatedGridInfo);
     }
 
     private captureKeys(controls) {
@@ -301,8 +309,8 @@ class Game {
         game.stage.backgroundColor = "#FFFFFF";
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
-        this.generateRandomGrid();
-        this.ensureConnectivity();
+        // this.generateRandomGrid();
+        // this.ensureConnectivity();
 
         grid = game.add.group();
         grid.enableBody = true;
@@ -310,7 +318,7 @@ class Game {
         this.bullets = game.add.group();
         this.bullets.enableBody = true;
 
-        this.drawGrid();
+        // this.drawGrid();
 
         this.player1(this.createPlayer(this.player1(), 20, 20, "tank1", true, control1));
         this.player2(this.createPlayer(this.player2(), 780, 480, 'tank2', false, control2));
@@ -331,7 +339,7 @@ class Game {
 
         this.generateRandomGrid();
         this.ensureConnectivity();
-        this.drawGrid();
+        // this.drawGrid();
         this.player1(this.createTank(this.player1(), 20, 20, 'tank1', true));
         this.player2(this.createTank(this.player2(), 780, 480, 'tank2', false));
         this.player1().controls = control1;
