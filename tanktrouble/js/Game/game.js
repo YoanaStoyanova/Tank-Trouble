@@ -35,6 +35,7 @@ var Game = /** @class */ (function () {
         this.isStartScreen = ko.observable(true);
         this.restartScreen = ko.observable(false);
         this.grid = ko.observable(null);
+        this.gridInfo = ko.observable(null);
         this.opponentMove = function (data) {
             console.log(data);
             console.log("opponent moved");
@@ -65,9 +66,7 @@ var Game = /** @class */ (function () {
             _this.socket.on("playerMove", _this.opponentMove);
             _this.socket.on("fireBullet", _this.opponentFire);
             _this.socket.on("gridReady", function (generatedGrid) {
-                console.log(grid);
-                _this.ensureConnectivity();
-                _this.drawGrid(generatedGrid);
+                _this.gridInfo(generatedGrid);
             });
         });
     }
@@ -102,87 +101,10 @@ var Game = /** @class */ (function () {
             }
         }
     };
-    Game.prototype.dfs = function (i, j, k) {
-        if (this.dfsGrid[i][j] !== -1)
-            return;
-        this.dfsGrid[i][j] = k;
-        if (!this.vBound(i + 1) && !this.horGrid[i + 1][j]) {
-            this.dfs(i + 1, j, k);
-        }
-        if (!this.vBound(i) && !this.horGrid[i][j]) {
-            this.dfs(i - 1, j, k);
-        }
-        if (!this.hBound(j + 1) && !this.verGrid[i][j + 1]) {
-            this.dfs(i, j + 1, k);
-        }
-        if (!this.hBound(j) && !this.verGrid[i][j]) {
-            this.dfs(i, j - 1, k);
-        }
-    };
-    Game.prototype.ddfs = function (i, j) {
-        if (this.dfsGrid[i][j] === -1)
-            return;
-        this.dfsGrid[i][j] = -1;
-        if (!this.vBound(i + 1)) {
-            if (this.horGrid[i + 1][j] && this.connectedList.indexOf(this.dfsGrid[i + 1][j]) === -1) {
-                this.horGrid[i + 1][j] = false;
-                this.connectedList.push(this.dfsGrid[i + 1][j]);
-            }
-            this.ddfs(i + 1, j);
-        }
-        if (!this.vBound(i)) {
-            if (this.horGrid[i][j] && this.connectedList.indexOf(this.dfsGrid[i - 1][j]) === -1) {
-                this.horGrid[i][j] = false;
-                this.connectedList.push(this.dfsGrid[i - 1][j]);
-            }
-            this.ddfs(i - 1, j);
-        }
-        if (!this.hBound(j + 1)) {
-            if (this.verGrid[i][j + 1] && this.connectedList.indexOf(this.dfsGrid[i][j + 1]) === -1) {
-                this.verGrid[i][j + 1] = false;
-                this.connectedList.push(this.dfsGrid[i][j + 1]);
-            }
-            this.ddfs(i, j + 1);
-        }
-        if (!this.hBound(j)) {
-            if (this.verGrid[i][j] && this.connectedList.indexOf(this.dfsGrid[i][j - 1]) === -1) {
-                this.verGrid[i][j] = false;
-                this.connectedList.push(this.dfsGrid[i][j - 1]);
-            }
-            this.ddfs(i, j - 1);
-        }
-    };
-    Game.prototype.checkConnectivity = function () {
-        this.dfsGrid = new Array(this.maxHlines);
-        for (var i = 0; i < this.maxHlines; i++)
-            this.dfsGrid[i] = new Array(this.maxVlines);
-        for (var i = 0; i < this.maxHlines; i++) {
-            for (var j = 0; j < this.maxVlines; j++) {
-                this.dfsGrid[i][j] = -1;
-            }
-        }
-        var components = 0;
-        for (var i = 0; i < this.maxHlines; i++) {
-            for (var j = 0; j < this.maxVlines; j++) {
-                if (this.dfsGrid[i][j] === -1) {
-                    this.dfs(i, j, components);
-                    components++;
-                }
-            }
-        }
-        return components === 1;
-    };
-    Game.prototype.ensureConnectivity = function () {
-        if (this.checkConnectivity())
-            return;
-        this.connectedList = [];
-        this.connectedList.push(-1);
-        this.connectedList.push(0);
-        this.ddfs(0, 0);
-    };
-    Game.prototype.drawGrid = function (generatedGridInfo) {
+    Game.prototype.drawGrid = function () {
         // var widthPerRect = this.arenaWidth / this.maxVlines;
         // var heightPerRect = this.arenaHeight / this.maxHlines;
+        var generatedGridInfo = this.gridInfo();
         for (var i = 0; i < generatedGridInfo.maxHlines + 1; i++) {
             for (var j = 0; j < generatedGridInfo.maxVlines + 1; j++) {
                 if (generatedGridInfo.horGrid[i][j] == true) {
@@ -297,7 +219,7 @@ var Game = /** @class */ (function () {
         grid.enableBody = true;
         this.bullets = game.add.group();
         this.bullets.enableBody = true;
-        // this.drawGrid();
+        this.drawGrid();
         this.player1(this.createPlayer(this.player1(), 20, 20, "tank1", true, control1));
         this.player2(this.createPlayer(this.player2(), 780, 480, 'tank2', false, control2));
         this.keyboard = game.input.keyboard;
@@ -312,9 +234,9 @@ var Game = /** @class */ (function () {
         this.player2().destroy();
         grid.destroy(true, true);
         this.bullets.destroy(true, true);
-        this.generateRandomGrid();
-        this.ensureConnectivity();
-        // this.drawGrid();
+        // this.generateRandomGrid();
+        // this.ensureConnectivity();
+        this.drawGrid();
         this.player1(this.createTank(this.player1(), 20, 20, 'tank1', true));
         this.player2(this.createTank(this.player2(), 780, 480, 'tank2', false));
         this.player1().controls = control1;

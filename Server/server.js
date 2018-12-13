@@ -45,12 +45,12 @@ app.post("/login", function (req, res) {
 })
 
 io.on('connection', function (socket) {
-    socket.join(`game${games.length+1}`);
+    socket.join(`game${games.length + 1}`);
     addNewPlayer(socket);
     if (players.length == 2) {
-        var game = new Game(games.length+1)
+        var game = new Game(games.length + 1)
         games.push(game);
-        io.to(`game${game.id}`).emit("gridReady",game.getGridInfo());
+        io.to(`game${game.id}`).emit("gridReady", game.getGridInfo());
     }
 });
 
@@ -94,6 +94,12 @@ var Game = function (id) {
     this.arenaHeight = 500;
     this.arenaWidth = 800;
     this.wallDensity = 0.55;
+    this.connectedList = [];
+    this.horGrid = [];
+    this.verGrid = [];
+    this.hLines = [];
+    this.vLines = [];
+    this.dfsGrid = [];
 
     function getRandomBool() {
         return Math.random() >= self.wallDensity;
@@ -126,25 +132,106 @@ var Game = function (id) {
                 if (hBound(j)) self.verGrid[i][j] = true;
             }
         }
-        
+        self.ensureConnectivity();
     }
 
-    self.getGridInfo = function(){
+    self.getGridInfo = function () {
         var widthPerRect = self.arenaWidth / self.maxVlines;
         var heightPerRect = self.arenaHeight / self.maxHlines;
         return {
-                horGrid: self.horGrid,
-                verGrid: self.verGrid,
-                hLines: self.hLines,
-                vLines: self.vLines,
-                widthPerRect:widthPerRect,
-                heightPerRect:heightPerRect,
-                maxHlines:self.maxHlines,
-                maxVlines:self.maxVlines
+            horGrid: self.horGrid,
+            verGrid: self.verGrid,
+            hLines: self.hLines,
+            vLines: self.vLines,
+            widthPerRect: widthPerRect,
+            heightPerRect: heightPerRect,
+            maxHlines: self.maxHlines,
+            maxVlines: self.maxVlines
         }
     }
 
-    this.grid = this.createGrid();
+    self.dfs = function (i, j, k) {
+        if (self.dfsGrid[i][j] !== -1) return;
+
+        self.dfsGrid[i][j] = k;
+        if (!vBound(i + 1) && !self.horGrid[i + 1][j]) {
+            self.dfs(i + 1, j, k);
+        }
+        if (!vBound(i) && !self.horGrid[i][j]) {
+            self.dfs(i - 1, j, k);
+        }
+        if (!hBound(j + 1) && !self.verGrid[i][j + 1]) {
+            self.dfs(i, j + 1, k);
+        }
+        if (!hBound(j) && !self.verGrid[i][j]) {
+            self.dfs(i, j - 1, k);
+        }
+    }
+
+    self.ddfs = function (i, j) {
+        if (self.dfsGrid[i][j] === -1) return;
+
+        self.dfsGrid[i][j] = -1;
+        if (!vBound(i + 1)) {
+            if (self.horGrid[i + 1][j] && self.connectedList.indexOf(self.dfsGrid[i + 1][j]) === -1) {
+                self.horGrid[i + 1][j] = false;
+                self.connectedList.push(self.dfsGrid[i + 1][j]);
+            }
+            self.ddfs(i + 1, j);
+        }
+        if (!vBound(i)) {
+            if (self.horGrid[i][j] && self.connectedList.indexOf(self.dfsGrid[i - 1][j]) === -1) {
+                self.horGrid[i][j] = false;
+                self.connectedList.push(self.dfsGrid[i - 1][j]);
+            }
+            self.ddfs(i - 1, j);
+        }
+        if (!hBound(j + 1)) {
+            if (self.verGrid[i][j + 1] && self.connectedList.indexOf(self.dfsGrid[i][j + 1]) === -1) {
+                self.verGrid[i][j + 1] = false;
+                self.connectedList.push(self.dfsGrid[i][j + 1]);
+            }
+            self.ddfs(i, j + 1);
+        }
+        if (!hBound(j)) {
+            if (self.verGrid[i][j] && self.connectedList.indexOf(self.dfsGrid[i][j - 1]) === -1) {
+                self.verGrid[i][j] = false;
+                self.connectedList.push(self.dfsGrid[i][j - 1]);
+            }
+            self.ddfs(i, j - 1);
+        }
+    }
+
+    self.checkConnectivity = function () {
+        self.dfsGrid = new Array(self.maxHlines);
+        for (var i = 0; i < self.maxHlines; i++)
+            self.dfsGrid[i] = new Array(self.maxVlines);
+        for (var i = 0; i < self.maxHlines; i++) {
+            for (var j = 0; j < self.maxVlines; j++) {
+                self.dfsGrid[i][j] = -1;
+            }
+        }
+        var components = 0;
+        for (var i = 0; i < self.maxHlines; i++) {
+            for (var j = 0; j < self.maxVlines; j++) {
+                if (self.dfsGrid[i][j] === -1) {
+                    self.dfs(i, j, components);
+                    components++;
+                }
+            }
+        }
+        return components === 1;
+    }
+
+    self.ensureConnectivity = function () {
+        if (self.checkConnectivity()) return;
+        self.connectedList = [];
+        self.connectedList.push(-1);
+        self.connectedList.push(0);
+        self.ddfs(0, 0);
+    }
+
+    self.createGrid();
     return this;
 }
 
