@@ -10,7 +10,7 @@
             }
         },{scope: 'public_profile,email'})
     };
-
+    
     document.getElementById("logInBtn").addEventListener("click",function (e) {
         login();
     });
