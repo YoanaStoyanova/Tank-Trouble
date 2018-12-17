@@ -45,14 +45,17 @@ app.post("/login", function (req, res) {
 })
 
 io.on('connection', function (socket) {
-    socket.join(`game${games.length + 1}`);
-    addNewPlayer(socket);
-    if (players.length == 2) {
-        var game = new Game(games.length + 1)
-        games.push(game);
-        io.to(`game${game.id}`).emit("gridReady", game.getGridInfo());
+    let freeGame = games.find(function(g){ return g.isFull() == false; });
+    socket.join(freeGame.id);
+    freeGame.addNewPlayer(socket);
+    addNewPlayer(socket, freeGame);
+    socket.emit("gridReady", freeGame.getGridInfo());
+    if (players.length % 2 == 0) {
+        games.push(new Game(games.length + 1));
     }
 });
+
+
 
 process.on('uncaughtException', function (exception) {
     // handle or ignore error
@@ -63,13 +66,15 @@ process.on('uncaughtException', function (exception) {
 // CONSTANTS
 var players = [];
 var games = [];
+
 /// FUNCTIONS
 
-function addNewPlayer(socket) {
+function addNewPlayer(socket, game) {
     console.log('a user connected');
     socket.on('playerMove', (moveData) => {
-        console.log("playermove");
-        socket.broadcast.emit("playerMove", moveData);
+        // console.log("playermove");
+        // console.log(moveData.coords);
+        socket.to(game.id).emit('playerMove', moveData);
     });
     socket.on('disconnect', function () {
         console.log('a user disconnected');
@@ -88,7 +93,7 @@ var Player = function (id, email, name) {
 var Game = function (id) {
     var self = this;
     this.grid = null;
-    this.id = id;
+    this.id = "game"+id;
     this.maxHlines = 5;
     this.maxVlines = 8;
     this.arenaHeight = 500;
@@ -100,6 +105,7 @@ var Game = function (id) {
     this.hLines = [];
     this.vLines = [];
     this.dfsGrid = [];
+    this.players = [];
 
     function getRandomBool() {
         return Math.random() >= self.wallDensity;
@@ -111,6 +117,19 @@ var Game = function (id) {
 
     function hBound(j) {
         return j <= 0 || j >= self.maxVlines;
+    }
+
+    self.addNewPlayer = function (socket) {
+        self.players.push(socket);
+        socket.emit("playerId", self.players.length)
+    }
+
+    self.removePlayer = function () {
+        throw "TODO";
+    }
+
+    self.isFull = function () {
+        return self.players.length == 2 ? true : false;
     }
 
     self.createGrid = function () {
@@ -234,6 +253,9 @@ var Game = function (id) {
     self.createGrid();
     return this;
 }
+
+var game = new Game(games.length + 1)
+games.push(game);
 
 http.listen(port, function () {
     console.log(`listening on *:${port}`);

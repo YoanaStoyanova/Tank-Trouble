@@ -1,3 +1,18 @@
+function throttled(fn, delay) {
+    var lastCall = 0;
+    return function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        var now = (new Date).getTime();
+        if (now - lastCall < delay) {
+            return;
+        }
+        lastCall = now;
+        return fn.apply(void 0, args);
+    };
+}
 ko.bindingHandlers.fightArena = {
     init: function (element, valueAccessor) {
         var gameVM = valueAccessor();
@@ -13,28 +28,28 @@ ko.bindingHandlers.fightArena = {
                 }
             }
         });
-        document.addEventListener("keydown", debounce(function (event) {
-            if (event.which == 38) { // up
+        document.addEventListener("keydown", function (event) {
+            if (event.which == 38) {
                 console.log("up");
                 gameVM.notifyMovement();
             }
-            if (event.which == 37) { //left
+            if (event.which == 37) {
                 console.log("up");
                 gameVM.notifyMovement();
             }
-            if (event.which == 39) { //right
+            if (event.which == 39) {
                 console.log("up");
                 gameVM.notifyMovement();
             }
-            if (event.which == 40) { //down
+            if (event.which == 40) {
                 console.log("up");
                 gameVM.notifyMovement();
             }
-            if (event.which == 32) { // space bar
+            if (event.which == 32) {
                 console.log("space bar");
                 gameVM.notifyFire();
             }
-        }, 200));
+        });
     }
 };
 //# sourceMappingURL=FightArenaBinding.js.map

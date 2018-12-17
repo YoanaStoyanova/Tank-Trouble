@@ -15,11 +15,11 @@
 				<hr/>
 				<h2 class="description">A two player tank game in Javascript.</h2>
 				<hr/>
-				<!-- ko if: game.player1() !== null && game.player2() !== null -->
+				<!-- ko if: game.player() !== null && game.opponent() !== null -->
 				<p id="scores" class="description">
-					Player I : <span id="score1" data-bind="text: game.player1().score"></span>
+					Player I : <span id="score1" data-bind="text: game.player().score"></span>
 					&nbsp;&nbsp;&nbsp;&nbsp;
-					Player II : <span id="score2" data-bind="text: game.player2().score"></span>
+					Player II : <span id="score2" data-bind="text: game.opponent().score"></span>
 				</p>
 				<!-- /ko -->
 				<div id="arena" data-bind="fightArena:game">

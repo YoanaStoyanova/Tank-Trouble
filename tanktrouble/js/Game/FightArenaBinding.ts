@@ -1,4 +1,15 @@
 declare var ko;
+function throttled(fn,delay,) {
+    let lastCall = 0;
+    return function (...args) {
+      const now = (new Date).getTime();
+      if (now - lastCall < delay) {
+        return;
+      }
+      lastCall = now;
+      return fn(...args);
+    }
+  }
 ko.bindingHandlers.fightArena = {
     init: function (element: HTMLElement, valueAccessor: any) {
         let gameVM: Game = valueAccessor();
@@ -14,7 +25,7 @@ ko.bindingHandlers.fightArena = {
             }
         });
 
-        document.addEventListener("keydown",debounce(function (event) {
+        document.addEventListener("keydown",function (event) {
             if (event.which == 38) {// up
                 console.log("up");
                 gameVM.notifyMovement()
@@ -35,6 +46,6 @@ ko.bindingHandlers.fightArena = {
                 console.log("space bar");
                 gameVM.notifyFire();
             }
-        },200));
+        });
     }
 };

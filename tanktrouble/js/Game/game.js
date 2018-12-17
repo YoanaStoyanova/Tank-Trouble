@@ -7,24 +7,22 @@ var control1 = {
     right: Phaser.Keyboard.RIGHT,
     fire: Phaser.Keyboard.M,
 };
-var control2 = {
-    up: Phaser.Keyboard.E,
-    down: Phaser.Keyboard.D,
-    left: Phaser.Keyboard.S,
-    right: Phaser.Keyboard.F,
-    fire: Phaser.Keyboard.Q,
-};
+// var control2 = {
+//     up: Phaser.Keyboard.E,
+//     down: Phaser.Keyboard.D,
+//     left: Phaser.Keyboard.S,
+//     right: Phaser.Keyboard.F,
+//     fire: Phaser.Keyboard.Q,
+// };
 var Game = /** @class */ (function () {
     function Game(socket) {
         var _this = this;
         this.socket = socket;
-        this.player1 = ko.observable(null);
-        this.player2 = ko.observable(null);
-        this.maxHlines = 5;
-        this.maxVlines = 8;
+        this.player = ko.observable(null);
+        this.opponent = ko.observable(null);
+        this.id = null;
         this.arenaHeight = 500;
         this.arenaWidth = 800;
-        this.wallDensity = 0.55;
         this.tankSpeed = 100;
         this.rotationSpeed = 2;
         this.bulletDelay = 10;
@@ -38,26 +36,25 @@ var Game = /** @class */ (function () {
         this.gridInfo = ko.observable(null);
         this.opponentMove = function (data) {
             console.log(data);
-            console.log("opponent moved");
-            var player = _this.player1().key === data.player ? _this.player1 : _this.player2;
-            player().body.velocity = new Phaser.Point(data.coords.x, data.coords.y);
-            player().angle = data.angle;
+            _this.opponent().x = data.coords.x;
+            _this.opponent().y = data.coords.y;
+            _this.opponent().angle = data.angle;
+        };
+        this.notifyMovement = function () {
+            var data = {
+                player: _this.id,
+                coords: {
+                    x: _this.player().x,
+                    y: _this.player().y
+                },
+                angle: _this.player().angle
+            };
+            console.log(data.coords);
+            _this.socket.emit("playerMove", data);
         };
         this.opponentFire = function (data) {
             console.log(data);
             console.log("opponent fired");
-        };
-        this.notifyMovement = function () {
-            var data = {
-                player: _this.player1().key,
-                coords: {
-                    x: _this.player1().body.velocity.x,
-                    y: _this.player1().body.velocity.y
-                },
-                angle: _this.player1().angle
-            };
-            _this.socket.emit("playerMove", data);
-            console.log("playerMove");
         };
         this.notifyFire = function () {
             _this.socket.emit("fireBullet", "fiiiireeeee!");
@@ -68,42 +65,12 @@ var Game = /** @class */ (function () {
             _this.socket.on("gridReady", function (generatedGrid) {
                 _this.gridInfo(generatedGrid);
             });
+            _this.socket.on("playerId", function (id) {
+                _this.id = id;
+            });
         });
     }
-    Game.prototype.getRandomBool = function () {
-        return Math.random() >= this.wallDensity;
-    };
-    Game.prototype.vBound = function (i) {
-        return i <= 0 || i >= this.maxHlines;
-    };
-    Game.prototype.hBound = function (j) {
-        return j <= 0 || j >= this.maxVlines;
-    };
-    Game.prototype.generateRandomGrid = function () {
-        this.horGrid = new Array(this.maxHlines + 1);
-        this.verGrid = new Array(this.maxHlines + 1);
-        this.hLines = new Array(this.maxHlines + 1);
-        this.vLines = new Array(this.maxHlines + 1);
-        for (var i = 0; i < this.maxHlines + 1; i++) {
-            this.horGrid[i] = new Array(this.maxVlines + 1);
-            this.hLines[i] = new Array(this.maxVlines + 1);
-            this.verGrid[i] = new Array(this.maxVlines + 1);
-            this.vLines[i] = new Array(this.maxVlines + 1);
-        }
-        for (var i = 0; i < this.maxHlines + 1; i++) {
-            for (var j = 0; j < this.maxVlines + 1; j++) {
-                this.horGrid[i][j] = this.getRandomBool();
-                this.verGrid[i][j] = this.getRandomBool();
-                if (this.vBound(i))
-                    this.horGrid[i][j] = true;
-                if (this.hBound(j))
-                    this.verGrid[i][j] = true;
-            }
-        }
-    };
     Game.prototype.drawGrid = function () {
-        // var widthPerRect = this.arenaWidth / this.maxVlines;
-        // var heightPerRect = this.arenaHeight / this.maxHlines;
         var generatedGridInfo = this.gridInfo();
         for (var i = 0; i < generatedGridInfo.maxHlines + 1; i++) {
             for (var j = 0; j < generatedGridInfo.maxVlines + 1; j++) {
@@ -144,7 +111,7 @@ var Game = /** @class */ (function () {
         newBullet.angle = angle;
         newBullet.ttl = new Date().getTime() + this.bulletTTL;
         newBullet.isPlayerOne = isPlayerOne;
-        isPlayerOne ? this.player1().bullets++ : this.player2().bullets++;
+        isPlayerOne ? this.player().bullets++ : this.opponent().bullets++;
     };
     Game.prototype.bulletCollided = function (bullet, gridLine) {
         var angle = Phaser.Math.radToDeg(bullet.body.angle);
@@ -167,7 +134,7 @@ var Game = /** @class */ (function () {
             return;
         var currTime = new Date().getTime();
         if (currTime > bullet.ttl) {
-            bullet.isPlayerOne ? this.player1().bullets-- : this.player2().bullets--;
+            bullet.isPlayerOne ? this.player().bullets-- : this.opponent().bullets--;
             bullet.destroy();
         }
     };
@@ -181,11 +148,11 @@ var Game = /** @class */ (function () {
         player.body.angularVelocity = 0;
     };
     Game.prototype.gameOver = function (player, bullet) {
-        this.stopPlayer(this.player1());
-        this.stopPlayer(this.player2());
+        this.stopPlayer(this.player());
+        this.stopPlayer(this.opponent());
         this.bullets.exists = false;
         this.isGameOver(true);
-        player.isPlayerOne ? this.player2().score(this.player2().score() + 1) : this.player1().score(this.player1().score() + 1);
+        player.isPlayerOne ? this.opponent().score(this.opponent().score() + 1) : this.player().score(this.player().score() + 1);
         this.displayScore(player.isPlayerOne);
     };
     Game.prototype.startGame = function () {
@@ -199,8 +166,8 @@ var Game = /** @class */ (function () {
     Game.prototype.preload = function () {
         game.load.image('hLine', 'assets/hLine.jpg');
         game.load.image('vLine', 'assets/vLine.jpg');
-        game.load.image('tank1', 'assets/redTank.jpg');
-        game.load.image('tank2', 'assets/blueTank.jpg');
+        game.load.image('player', 'assets/redTank.jpg');
+        game.load.image('opponent', 'assets/blueTank.jpg');
         game.load.image('bullet', 'assets/bullet.png');
     };
     Game.prototype.createPlayer = function (old, coodsX, coordsY, id, Immidiate, controls) {
@@ -213,38 +180,41 @@ var Game = /** @class */ (function () {
     Game.prototype.create = function () {
         game.stage.backgroundColor = "#FFFFFF";
         game.physics.startSystem(Phaser.Physics.ARCADE);
-        // this.generateRandomGrid();
-        // this.ensureConnectivity();
         grid = game.add.group();
         grid.enableBody = true;
         this.bullets = game.add.group();
         this.bullets.enableBody = true;
         this.drawGrid();
-        this.player1(this.createPlayer(this.player1(), 20, 20, "tank1", true, control1));
-        this.player2(this.createPlayer(this.player2(), 780, 480, 'tank2', false, control2));
+        if (this.id == 1) {
+            this.player(this.createPlayer(this.player(), 20, 20, "player", true, control1));
+            this.opponent(this.createPlayer(this.opponent(), 780, 480, 'opponent', false, null));
+        }
+        else {
+            this.player(this.createPlayer(this.opponent(), 780, 480, 'opponent', false, control1));
+            this.opponent(this.createPlayer(this.player(), 20, 20, "player", true, null));
+        }
         this.keyboard = game.input.keyboard;
         this.captureKeys(control1);
-        this.captureKeys(control2);
         this.isGameOver(false);
     };
     Game.prototype.restart = function () {
-        var score1 = this.player1().score;
-        var score2 = this.player2().score;
-        this.player1().destroy();
-        this.player2().destroy();
+        var score1 = this.player().score;
+        var score2 = this.opponent().score;
+        this.player().destroy();
+        this.opponent().destroy();
         grid.destroy(true, true);
         this.bullets.destroy(true, true);
         // this.generateRandomGrid();
         // this.ensureConnectivity();
         this.drawGrid();
-        this.player1(this.createTank(this.player1(), 20, 20, 'tank1', true));
-        this.player2(this.createTank(this.player2(), 780, 480, 'tank2', false));
-        this.player1().controls = control1;
-        this.player2().controls = control2;
-        this.player1().bullets = 0;
-        this.player2().bullets = 0;
-        this.player1().score = score1;
-        this.player2().score = score2;
+        this.player(this.createTank(this.player(), 20, 20, 'player', true));
+        this.opponent(this.createTank(this.opponent(), 780, 480, 'opponent', false));
+        this.player().controls = control1;
+        // this.player2().controls = control2;
+        this.player().bullets = 0;
+        this.opponent().bullets = 0;
+        this.player().score = score1;
+        this.opponent().score = score2;
         this.bullets.exists = true;
         this.isGameOver(false);
         this.restartScreen(false);
@@ -260,6 +230,8 @@ var Game = /** @class */ (function () {
         else if (this.keyboard.isDown(controls.down)) {
             player.body.velocity = game.physics.arcade.velocityFromAngle(player.body.rotation, -1 * this.tankSpeed);
         }
+        // if (player.body.velocity.x !== 0 && player.body.velocity.y !== 0)
+        //     console.log("player.body.velocity", player.x,player.y);
         if (this.keyboard.isDown(controls.left)) {
             player.angle -= this.rotationSpeed;
         }
@@ -283,10 +255,10 @@ var Game = /** @class */ (function () {
         }
         this.bullets.forEach(this.killBullets.bind(this));
         game.physics.arcade.collide(this.bullets, grid, this.bulletCollided.bind(this));
-        this.updatePlayerCollisions(this.player1());
-        this.updatePlayerCollisions(this.player2());
-        this.updatePlayerPosition(this.player1());
-        this.updatePlayerPosition(this.player2());
+        this.updatePlayerCollisions(this.player());
+        this.updatePlayerCollisions(this.opponent());
+        this.updatePlayerPosition(this.player());
+        // this.updatePlayerPosition(this.player2());
     };
     return Game;
 }());
