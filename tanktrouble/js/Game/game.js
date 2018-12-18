@@ -1,5 +1,6 @@
 var grid;
 var game;
+var _;
 var control1 = {
     up: Phaser.Keyboard.UP,
     down: Phaser.Keyboard.DOWN,
@@ -34,8 +35,8 @@ var Game = /** @class */ (function () {
         this.restartScreen = ko.observable(false);
         this.grid = ko.observable(null);
         this.gridInfo = ko.observable(null);
+        this.i = 0;
         this.opponentMove = function (data) {
-            console.log(data);
             _this.opponent().x = data.coords.x;
             _this.opponent().y = data.coords.y;
             _this.opponent().angle = data.angle;
@@ -49,7 +50,6 @@ var Game = /** @class */ (function () {
                 },
                 angle: _this.player().angle
             };
-            console.log(data.coords);
             _this.socket.emit("playerMove", data);
         };
         this.opponentFire = function (data) {
@@ -69,6 +69,7 @@ var Game = /** @class */ (function () {
                 _this.id = id;
             });
         });
+        this.i = 0;
     }
     Game.prototype.drawGrid = function () {
         var generatedGridInfo = this.gridInfo();
@@ -230,8 +231,6 @@ var Game = /** @class */ (function () {
         else if (this.keyboard.isDown(controls.down)) {
             player.body.velocity = game.physics.arcade.velocityFromAngle(player.body.rotation, -1 * this.tankSpeed);
         }
-        // if (player.body.velocity.x !== 0 && player.body.velocity.y !== 0)
-        //     console.log("player.body.velocity", player.x,player.y);
         if (this.keyboard.isDown(controls.left)) {
             player.angle -= this.rotationSpeed;
         }

@@ -28,22 +28,24 @@ ko.bindingHandlers.fightArena = {
                 }
             }
         });
+        var isKeyDown = false;
+        var moveInterval = null;
         document.addEventListener("keydown", function (event) {
-            if (event.which == 38) {
-                console.log("up");
-                gameVM.notifyMovement();
+            if (event.which == 38 || event.which == 37 || event.which == 39 || event.which == 40) {
+                isKeyDown = true;
+                moveInterval = setInterval(function () {
+                    gameVM.notifyMovement();
+                }, 50);
             }
-            if (event.which == 37) {
-                console.log("up");
-                gameVM.notifyMovement();
+            if (event.which == 32) {
+                console.log("space bar");
+                gameVM.notifyFire();
             }
-            if (event.which == 39) {
-                console.log("up");
-                gameVM.notifyMovement();
-            }
-            if (event.which == 40) {
-                console.log("up");
-                gameVM.notifyMovement();
+        });
+        document.addEventListener("keyup", function (event) {
+            if (event.which == 38 || event.which == 37 || event.which == 39 || event.which == 40) {
+                isKeyDown = false;
+                clearInterval(moveInterval);
             }
             if (event.which == 32) {
                 console.log("space bar");

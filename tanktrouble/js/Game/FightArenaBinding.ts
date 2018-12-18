@@ -24,23 +24,24 @@ ko.bindingHandlers.fightArena = {
                 }
             }
         });
-
+        var isKeyDown = false;
+        var moveInterval=null;
         document.addEventListener("keydown",function (event) {
-            if (event.which == 38) {// up
-                console.log("up");
-                gameVM.notifyMovement()
+            if(event.which == 38 ||event.which == 37 || event.which == 39 || event.which == 40){
+                isKeyDown = true;
+                moveInterval = setInterval(function(){
+                    gameVM.notifyMovement();
+                },50);
             }
-            if (event.which == 37) { //left
-                console.log("up");
-                gameVM.notifyMovement()
+            if (event.which == 32) { // space bar
+                console.log("space bar");
+                gameVM.notifyFire();
             }
-            if (event.which == 39) { //right
-                console.log("up");
-                gameVM.notifyMovement()
-            }
-            if (event.which == 40) { //down
-                console.log("up");
-                gameVM.notifyMovement()
+        });
+        document.addEventListener("keyup",function (event) {
+            if(event.which == 38 ||event.which == 37 || event.which == 39 || event.which == 40){
+                isKeyDown = false;
+                clearInterval(moveInterval);
             }
             if (event.which == 32) { // space bar
                 console.log("space bar");

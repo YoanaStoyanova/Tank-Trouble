@@ -4,7 +4,6 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var path = require('path');
 const bodyParser = require("body-parser");
-
 var baseDir = __dirname.slice(0, __dirname.lastIndexOf(path.sep)) + path.sep + "tanktrouble";
 var port = 8080;
 
@@ -68,12 +67,11 @@ var players = [];
 var games = [];
 
 /// FUNCTIONS
-
+var i =0;
 function addNewPlayer(socket, game) {
     console.log('a user connected');
     socket.on('playerMove', (moveData) => {
-        // console.log("playermove");
-        // console.log(moveData.coords);
+        console.log(i++);
         socket.to(game.id).emit('playerMove', moveData);
     });
     socket.on('disconnect', function () {

@@ -1,5 +1,6 @@
 var grid;
 var game;
+var _;
 // var player1, player2;
 declare var Phaser: any;
 var control1 = {
@@ -36,7 +37,7 @@ class Game {
 
     public grid = ko.observable(null);
     public gridInfo = ko.observable(null);
-
+    public i=0;
     constructor(private socket) {
         socket.on('connect', () => {
             this.socket.on("playerMove", this.opponentMove);
@@ -48,10 +49,10 @@ class Game {
                 this.id=id;
             })
         });
+        this.i=0;
     }
 
     private opponentMove = (data) => {
-        console.log(data);
         this.opponent().x = data.coords.x;
         this.opponent().y = data.coords.y;
         this.opponent().angle = data.angle
@@ -66,7 +67,6 @@ class Game {
             },
             angle: this.player().angle
         }
-        console.log(data.coords);
         this.socket.emit("playerMove", data);
 
     }
@@ -258,11 +258,7 @@ class Game {
         } else if (this.keyboard.isDown(controls.down)) {
             player.body.velocity = game.physics.arcade.velocityFromAngle(player.body.rotation, -1 * this.tankSpeed);
         }
-        // if (player.body.velocity.x !== 0 && player.body.velocity.y !== 0)
-        //     console.log("player.body.velocity", player.x,player.y);
-            
-            
-
+        
         if (this.keyboard.isDown(controls.left)) {
             player.angle -= this.rotationSpeed;
         } else if (this.keyboard.isDown(controls.right)) {
