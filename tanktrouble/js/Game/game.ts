@@ -1,26 +1,18 @@
 var grid;
 var game;
-var _;
-// var player1, player2;
 declare var Phaser: any;
 var control1 = {
     up: Phaser.Keyboard.UP,
     down: Phaser.Keyboard.DOWN,
     left: Phaser.Keyboard.LEFT,
     right: Phaser.Keyboard.RIGHT,
-    fire: Phaser.Keyboard.M,
+    fire: Phaser.Keyboard.SPACEBAR,
 };
-// var control2 = {
-//     up: Phaser.Keyboard.E,
-//     down: Phaser.Keyboard.D,
-//     left: Phaser.Keyboard.S,
-//     right: Phaser.Keyboard.F,
-//     fire: Phaser.Keyboard.Q,
-// };
+
 class Game {
     private player = ko.observable(null);
     private opponent = ko.observable(null);
-    private id:number=null;
+    private id: number = null;
     public arenaHeight = 500;
     public arenaWidth = 800;
     public keyboard;
@@ -37,7 +29,7 @@ class Game {
 
     public grid = ko.observable(null);
     public gridInfo = ko.observable(null);
-    public i=0;
+    public i = 0;
     constructor(private socket) {
         socket.on('connect', () => {
             this.socket.on("playerMove", this.opponentMove);
@@ -45,14 +37,15 @@ class Game {
             this.socket.on("gridReady", (generatedGrid) => {
                 this.gridInfo(generatedGrid);
             });
-            this.socket.on("playerId",(id)=>{
-                this.id=id;
+            this.socket.on("playerId", (id) => {
+                this.id = id;
             })
         });
-        this.i=0;
+        this.i = 0;
     }
 
     private opponentMove = (data) => {
+        console.log("opponent move");
         this.opponent().x = data.coords.x;
         this.opponent().y = data.coords.y;
         this.opponent().angle = data.angle
@@ -68,12 +61,14 @@ class Game {
             angle: this.player().angle
         }
         this.socket.emit("playerMove", data);
-
     }
 
-    private opponentFire = (data) => {
-        console.log(data);
-        console.log("opponent fired");
+    public notifyFire = () => {
+        this.socket.emit("fireBullet");
+    }
+
+    private opponentFire = () => {
+        this.createBullet(this.opponent());
     }
 
     private drawGrid() {
@@ -111,15 +106,18 @@ class Game {
         return player;
     }
 
-    private createBullet(x, y, angle, isPlayerOne) {
+    private createBullet(player) {
+        var x = player.x;
+        var y = player.y;
+        var angle = player.angle;
         var newBullet = this.bullets.create(x, y, 'bullet');
         newBullet.body.collideWorldBounds = true;
         newBullet.anchor.set(0.5, 0.5);
         newBullet.body.velocity = game.physics.arcade.velocityFromAngle(angle, this.bulletSpeed);
         newBullet.angle = angle;
         newBullet.ttl = new Date().getTime() + this.bulletTTL;
-        newBullet.isPlayerOne = isPlayerOne;
-        isPlayerOne ? this.player().bullets++ : this.opponent().bullets++;
+        newBullet.isPlayerOne = player.isPlayerOne;
+        player.bullets++;
     }
 
     private bulletCollided(bullet, gridLine) {
@@ -206,11 +204,11 @@ class Game {
 
         this.drawGrid();
 
-        if(this.id==1){
+        if (this.id == 1) {
             this.player(this.createPlayer(this.player(), 20, 20, "player", true, control1));
-            this.opponent(this.createPlayer(this.opponent(), 780, 480, 'opponent', false,null));
-        }else{
-            this.player(this.createPlayer(this.opponent(), 780, 480, 'opponent', false,control1));
+            this.opponent(this.createPlayer(this.opponent(), 780, 480, 'opponent', false, null));
+        } else {
+            this.player(this.createPlayer(this.opponent(), 780, 480, 'opponent', false, control1));
             this.opponent(this.createPlayer(this.player(), 20, 20, "player", true, null));
         }
 
@@ -227,13 +225,10 @@ class Game {
         grid.destroy(true, true);
         this.bullets.destroy(true, true);
 
-        // this.generateRandomGrid();
-        // this.ensureConnectivity();
         this.drawGrid();
         this.player(this.createTank(this.player(), 20, 20, 'player', true));
         this.opponent(this.createTank(this.opponent(), 780, 480, 'opponent', false));
         this.player().controls = control1;
-        // this.player2().controls = control2;
         this.player().bullets = 0;
         this.opponent().bullets = 0;
         this.player().score = score1;
@@ -248,17 +243,13 @@ class Game {
         game.physics.arcade.collide(player, this.bullets, this.gameOver.bind(this));
     }
 
-    public notifyFire = () => {
-        this.socket.emit("fireBullet", "fiiiireeeee!");
-    }
-
     private manualControlPosition(player, controls, playerBullets) {
         if (this.keyboard.isDown(controls.up)) {
             player.body.velocity = game.physics.arcade.velocityFromAngle(player.body.rotation, this.tankSpeed);
         } else if (this.keyboard.isDown(controls.down)) {
             player.body.velocity = game.physics.arcade.velocityFromAngle(player.body.rotation, -1 * this.tankSpeed);
         }
-        
+
         if (this.keyboard.isDown(controls.left)) {
             player.angle -= this.rotationSpeed;
         } else if (this.keyboard.isDown(controls.right)) {
@@ -266,7 +257,7 @@ class Game {
         }
 
         if (this.keyboard.isDown(controls.fire) && this.keyboard.justPressed(controls.fire, this.bulletDelay) && playerBullets < this.maxBullets) {
-            this.createBullet(player.position.x, player.position.y, player.body.rotation, player.isPlayerOne);
+            this.createBullet(player);
         }
     }
 
@@ -275,7 +266,6 @@ class Game {
 
         if (!this.isGameOver()) {
             this.manualControlPosition(player, player.controls, player.bullets);
-            // TODO: AIControlPosition(player, player.bullets, player.isPlayerOne)
         }
     }
 
@@ -289,6 +279,5 @@ class Game {
         this.updatePlayerCollisions(this.player());
         this.updatePlayerCollisions(this.opponent());
         this.updatePlayerPosition(this.player());
-        // this.updatePlayerPosition(this.player2());
     }
 }

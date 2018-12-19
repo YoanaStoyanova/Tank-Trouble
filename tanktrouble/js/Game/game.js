@@ -1,20 +1,12 @@
 var grid;
 var game;
-var _;
 var control1 = {
     up: Phaser.Keyboard.UP,
     down: Phaser.Keyboard.DOWN,
     left: Phaser.Keyboard.LEFT,
     right: Phaser.Keyboard.RIGHT,
-    fire: Phaser.Keyboard.M,
+    fire: Phaser.Keyboard.SPACEBAR,
 };
-// var control2 = {
-//     up: Phaser.Keyboard.E,
-//     down: Phaser.Keyboard.D,
-//     left: Phaser.Keyboard.S,
-//     right: Phaser.Keyboard.F,
-//     fire: Phaser.Keyboard.Q,
-// };
 var Game = /** @class */ (function () {
     function Game(socket) {
         var _this = this;
@@ -37,6 +29,7 @@ var Game = /** @class */ (function () {
         this.gridInfo = ko.observable(null);
         this.i = 0;
         this.opponentMove = function (data) {
+            console.log("opponent move");
             _this.opponent().x = data.coords.x;
             _this.opponent().y = data.coords.y;
             _this.opponent().angle = data.angle;
@@ -52,12 +45,11 @@ var Game = /** @class */ (function () {
             };
             _this.socket.emit("playerMove", data);
         };
-        this.opponentFire = function (data) {
-            console.log(data);
-            console.log("opponent fired");
-        };
         this.notifyFire = function () {
-            _this.socket.emit("fireBullet", "fiiiireeeee!");
+            _this.socket.emit("fireBullet");
+        };
+        this.opponentFire = function () {
+            _this.createBullet(_this.opponent());
         };
         socket.on('connect', function () {
             _this.socket.on("playerMove", _this.opponentMove);
@@ -104,15 +96,18 @@ var Game = /** @class */ (function () {
             player.angle = 180;
         return player;
     };
-    Game.prototype.createBullet = function (x, y, angle, isPlayerOne) {
+    Game.prototype.createBullet = function (player) {
+        var x = player.x;
+        var y = player.y;
+        var angle = player.angle;
         var newBullet = this.bullets.create(x, y, 'bullet');
         newBullet.body.collideWorldBounds = true;
         newBullet.anchor.set(0.5, 0.5);
         newBullet.body.velocity = game.physics.arcade.velocityFromAngle(angle, this.bulletSpeed);
         newBullet.angle = angle;
         newBullet.ttl = new Date().getTime() + this.bulletTTL;
-        newBullet.isPlayerOne = isPlayerOne;
-        isPlayerOne ? this.player().bullets++ : this.opponent().bullets++;
+        newBullet.isPlayerOne = player.isPlayerOne;
+        player.bullets++;
     };
     Game.prototype.bulletCollided = function (bullet, gridLine) {
         var angle = Phaser.Math.radToDeg(bullet.body.angle);
@@ -205,13 +200,10 @@ var Game = /** @class */ (function () {
         this.opponent().destroy();
         grid.destroy(true, true);
         this.bullets.destroy(true, true);
-        // this.generateRandomGrid();
-        // this.ensureConnectivity();
         this.drawGrid();
         this.player(this.createTank(this.player(), 20, 20, 'player', true));
         this.opponent(this.createTank(this.opponent(), 780, 480, 'opponent', false));
         this.player().controls = control1;
-        // this.player2().controls = control2;
         this.player().bullets = 0;
         this.opponent().bullets = 0;
         this.player().score = score1;
@@ -238,14 +230,13 @@ var Game = /** @class */ (function () {
             player.angle += this.rotationSpeed;
         }
         if (this.keyboard.isDown(controls.fire) && this.keyboard.justPressed(controls.fire, this.bulletDelay) && playerBullets < this.maxBullets) {
-            this.createBullet(player.position.x, player.position.y, player.body.rotation, player.isPlayerOne);
+            this.createBullet(player);
         }
     };
     Game.prototype.updatePlayerPosition = function (player) {
         this.stopPlayer(player);
         if (!this.isGameOver()) {
             this.manualControlPosition(player, player.controls, player.bullets);
-            // TODO: AIControlPosition(player, player.bullets, player.isPlayerOne)
         }
     };
     Game.prototype.update = function () {
@@ -257,7 +248,6 @@ var Game = /** @class */ (function () {
         this.updatePlayerCollisions(this.player());
         this.updatePlayerCollisions(this.opponent());
         this.updatePlayerPosition(this.player());
-        // this.updatePlayerPosition(this.player2());
     };
     return Game;
 }());

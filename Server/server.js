@@ -44,17 +44,13 @@ app.post("/login", function (req, res) {
 })
 
 io.on('connection', function (socket) {
-    let freeGame = games.find(function(g){ return g.isFull() == false; });
-    socket.join(freeGame.id);
-    freeGame.addNewPlayer(socket);
+    let freeGame = games.find(function (g) { return g.isFull() == false; });
+    socket.join(freeGame.id);   
     addNewPlayer(socket, freeGame);
-    socket.emit("gridReady", freeGame.getGridInfo());
     if (players.length % 2 == 0) {
         games.push(new Game(games.length + 1));
     }
 });
-
-
 
 process.on('uncaughtException', function (exception) {
     // handle or ignore error
@@ -67,16 +63,28 @@ var players = [];
 var games = [];
 
 /// FUNCTIONS
-var i =0;
 function addNewPlayer(socket, game) {
     console.log('a user connected');
+    game.addNewPlayer(socket);
+
     socket.on('playerMove', (moveData) => {
-        console.log(i++);
         socket.to(game.id).emit('playerMove', moveData);
     });
+
     socket.on('disconnect', function () {
+        // game.removePlayer(socket);
         console.log('a user disconnected');
     });
+
+    socket.on('leave', function () {
+        game.removePlayer(socket);
+        console.log('a user disconnected');
+    });
+
+    socket.on('fireBullet', function () {
+        socket.to(game.id).emit("fireBullet");
+    });
+    socket.emit("gridReady", game.getGridInfo());
 }
 //GRID
 
@@ -91,7 +99,7 @@ var Player = function (id, email, name) {
 var Game = function (id) {
     var self = this;
     this.grid = null;
-    this.id = "game"+id;
+    this.id = "game" + id;
     this.maxHlines = 5;
     this.maxVlines = 8;
     this.arenaHeight = 500;
@@ -122,8 +130,9 @@ var Game = function (id) {
         socket.emit("playerId", self.players.length)
     }
 
-    self.removePlayer = function () {
-        throw "TODO";
+    self.removePlayer = function (socket) {
+        var index = self.players.find(s=>socket.id == s.id);
+        self.players.splice(index,1);
     }
 
     self.isFull = function () {
