@@ -11,10 +11,11 @@ var control1 = {
 
 class Game {
     private player = ko.observable(null);
+    public playerName = ko.observable("");
+    public opponentName = ko.observable("");
     private opponent = ko.observable(null);
+    public playerReady = ko.observable(false);
     private id: number = null;
-    public arenaHeight = 500;
-    public arenaWidth = 800;
     public keyboard;
     public tankSpeed = 100;
     public rotationSpeed = 2;
@@ -23,29 +24,34 @@ class Game {
     public bulletTTL = 20000;
     public maxBullets = 5;
     public bullets;
+    public gameReady = ko.observable(false);
     public isGameOver = ko.observable(false);
     public isStartScreen = ko.observable(true);
     public restartScreen = ko.observable(false);
 
     public grid = ko.observable(null);
     public gridInfo = ko.observable(null);
-    public i = 0;
     constructor(private socket) {
-        socket.on('connect', () => {
-            this.socket.on("playerMove", this.opponentMove);
-            this.socket.on("fireBullet", this.opponentFire);
-            this.socket.on("gridReady", (generatedGrid) => {
-                this.gridInfo(generatedGrid);
-            });
-            this.socket.on("playerId", (id) => {
-                this.id = id;
-            })
-        });
-        this.i = 0;
+        this.registerForSocketEvents();
+        this.playerName(sessionStorage["name"]);
+        this.socket.emit("playerName", this.playerName());
     }
 
+    private registerForSocketEvents() {
+        this.socket.on('connect', () => {
+            this.socket.on("playerMove", this.opponentMove);
+            this.socket.on("fireBullet", this.opponentFire);
+            this.socket.on("gridReady", generatedGrid => this.gridInfo(generatedGrid));
+            this.socket.on("playerId", id => this.id = id);
+            this.socket.on("playerName", name => this.opponentName(name));
+            this.socket.on("playersReady", (opponentName) => {
+                this.opponentName(opponentName);
+                this.isStartScreen(false);
+                this.gameReady(true);
+            });
+        });
+    }
     private opponentMove = (data) => {
-        console.log("opponent move");
         this.opponent().x = data.coords.x;
         this.opponent().y = data.coords.y;
         this.opponent().angle = data.angle
@@ -168,12 +174,13 @@ class Game {
     }
 
     public startGame() {
-        this.isStartScreen(false);
-        game = new Phaser.Game(this.arenaWidth + 2, this.arenaHeight + 2, Phaser.CANVAS, "arena", {
+        this.playerReady(true);        
+        game = new Phaser.Game(this.gridInfo().arenaWidth + 2, this.gridInfo().arenaHeight + 2, Phaser.CANVAS, "arena", {
             preload: this.preload.bind(this),
             create: this.create.bind(this),
             update: this.update.bind(this),
         }, false, true);
+        this.socket.emit('playerReady',sessionStorage["userId"]);
     }
 
     private preload() {

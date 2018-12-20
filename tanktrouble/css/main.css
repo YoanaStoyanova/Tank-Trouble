@@ -150,11 +150,9 @@ a:hover {
 }
 
 a.button {
+  border-radius: 8px;
   cursor: pointer;
   text-align: center;
-  -moz-border-radius: 3px;
-  -webkit-border-radius: 3px;
-  border-radius: 3px;
   border-top: solid 1px #cbcbcb;
   border-left: solid 1px #b7b7b7;
   border-right: solid 1px #b7b7b7;
@@ -287,13 +285,21 @@ a.button.controls {
   }
 }
 
-a.button.fire {
+div.button.fire {
+  display: inline;
   animation-duration: 3s;
   animation-name: glow;
   animation-iteration-count: infinite;
   -webkit-animation-name: glow;
   -webkit-animation-duration: 3s;
   -webkit-animation-iteration-count: infinite;
+  padding: 15px;
+  background: #fcfcfc;
+  border-top: solid 1px #b7b7b7;
+  border-left: solid 1px #b3b3b3;
+  border-right: solid 1px #b3b3b3;
+  border-bottom: solid 1px #b3b3b3;
+  border-radius: 8px;
 }
 
 .centerRow {
@@ -308,4 +314,12 @@ a.button.fire {
 
 #start{
   clear: both;
+}
+
+.hidden {
+  visibility: hidden;
+}
+
+.center-content {
+  text-align: center;
 }
