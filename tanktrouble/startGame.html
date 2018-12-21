@@ -17,9 +17,9 @@
 				<hr/>
 				<!-- ko if: game.player() !== null && game.opponent() !== null -->
 				<p id="scores" class="description">
-					Player I : <span id="score1" data-bind="text: game.player().score"></span>
+					<span data-bind="text:game.playerName()"></span> : <span id="score1" data-bind="text: game.player().score"></span>
 					&nbsp;&nbsp;&nbsp;&nbsp;
-					Player II : <span id="score2" data-bind="text: game.opponent().score"></span>
+					<span data-bind="text:game.opponentName()"></span> : <span id="score2" data-bind="text: game.opponent().score"></span>
 				</p>
 				<!-- /ko -->
 				<div id="arena" data-bind="fightArena:game">
@@ -28,27 +28,25 @@
 							<h2 class="description arenaHeader">Controls</h2>
 							<div id="controlsWrapper">
 								<div id="player1" class="player">
-									<h2 class="description">Player I</h2>
+									<h2 class="description">Move</h2>
 									<div id="controls1">
 										<a class="button controls">↑</a>
 										<div class="centerRow">
 											<a class="button controls float">←</a>
-											<a class="button controls float fire">M</a>
+											<a class="button controls float">↓</a>
+											<!-- <a class="button controls float fire">SPACEBAR</a> -->
 											<a class="button controls float">→</a>
 										</div>
-										<a class="button controls down">↓</a>
+										
 									</div>
 								</div>
 								<div id="player2" class="player">
-									<h2 class="description">Player II</h2>
+									<h2 class="description">Fire</h2>
 									<div id="controls1">
-										<a class="button controls">E</a>
-										<div class="centerRow">
-											<a class="button controls float">S</a>
-											<a class="button controls float fire">Q</a>
-											<a class="button controls float">F</a>
+										<a class="button controls hidden"></a>
+										<div class="center-content">
+											<div class="button controls fire">SPACEBAR</div>
 										</div>
-										<a class="button controls down">D</a>
 									</div>
 								</div>
 							</div>
@@ -67,7 +65,11 @@
 				<p id="instructions" class="description">HOW TO PLAY: Use the controls to move your tank around and fire bullets. You have a maximum of 5 bullets after which you have to wait for one of the bullets to die. Each bullet lasts for 20 seconds. If any of the bullets hit your tank, you die.</p>
 				<hr/>
 				<footer>
-					<p class="description">Made using the <a href="http://en.wikipedia.org/wiki/Force_(Star_Wars)" target="_blank">force</a> by <a href="https://github.com/sameergoyal" target="_blank">Sameer Goyal</a>.</p>
+					<p class="description">Made using the force by 
+						<a href="https://github.com/Nasko-Kurtakov" target="_blank">Nasko</a>,
+						<a href="https://github.com/aleks-gospodinova" target="_blank">Aleks</a>,
+						<a href="https://github.com/zshehov" target="_blank">Zdravko</a> and 
+						<a href="https://github.com/YoanaStoyanova" target="_blank">Yoana</a>.</p>
 				</footer>
 			</div>
 		</div>

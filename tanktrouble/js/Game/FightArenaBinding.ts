@@ -1,15 +1,15 @@
 declare var ko;
-function throttled(fn,delay,) {
+function throttled(fn, delay, ) {
     let lastCall = 0;
     return function (...args) {
-      const now = (new Date).getTime();
-      if (now - lastCall < delay) {
-        return;
-      }
-      lastCall = now;
-      return fn(...args);
+        const now = (new Date).getTime();
+        if (now - lastCall < delay) {
+            return;
+        }
+        lastCall = now;
+        return fn(...args);
     }
-  }
+}
 ko.bindingHandlers.fightArena = {
     init: function (element: HTMLElement, valueAccessor: any) {
         let gameVM: Game = valueAccessor();
@@ -24,27 +24,62 @@ ko.bindingHandlers.fightArena = {
                 }
             }
         });
-
-        document.addEventListener("keydown",function (event) {
-            if (event.which == 38) {// up
-                console.log("up");
-                gameVM.notifyMovement()
-            }
-            if (event.which == 37) { //left
-                console.log("up");
-                gameVM.notifyMovement()
-            }
-            if (event.which == 39) { //right
-                console.log("up");
-                gameVM.notifyMovement()
-            }
-            if (event.which == 40) { //down
-                console.log("up");
-                gameVM.notifyMovement()
-            }
+        var isKeyDown = false;
+        //up, down, left, right
+        var keys = [false, false, false, false]
+        var moveInterval = null;
+        document.addEventListener("keydown", function (event) {
             if (event.which == 32) { // space bar
-                console.log("space bar");
                 gameVM.notifyFire();
+            }
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.which == 38) {//up
+                keys[0] = true;
+            }
+
+            if (event.which == 37) {//left
+                keys[2] = true;
+            }
+
+            if (event.which == 39) {//right
+                keys[3] = true;
+            }
+
+            if (event.which == 40) {//down
+                keys[1] = true;
+            }
+            var isSomeKeyPressed = keys.some(val => val === true);
+            if (isSomeKeyPressed && moveInterval === null) {
+                console.log("set");
+                moveInterval = setInterval(function () {
+                    gameVM.notifyMovement();
+                }, 50);
+            }
+        });
+
+        document.addEventListener("keyup", function (event) {
+            if (event.which == 38) {//up
+                keys[0] = false;
+            }
+
+            if (event.which == 37) {//left
+                keys[2] = false;
+            }
+
+            if (event.which == 39) {//right
+                keys[3] = false;
+            }
+
+            if (event.which == 40) {//down
+                keys[1] = false;
+            }
+
+            var isSomeKeyPressed = keys.some(val => val === true);
+            if (!isSomeKeyPressed) {
+                clearInterval(moveInterval);
+                moveInterval = null;
             }
         });
     }

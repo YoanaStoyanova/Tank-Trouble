@@ -28,26 +28,53 @@ ko.bindingHandlers.fightArena = {
                 }
             }
         });
+        var isKeyDown = false;
+        //up, down, left, right
+        var keys = [false, false, false, false];
+        var moveInterval = null;
         document.addEventListener("keydown", function (event) {
-            if (event.which == 38) {
-                console.log("up");
-                gameVM.notifyMovement();
-            }
-            if (event.which == 37) {
-                console.log("up");
-                gameVM.notifyMovement();
-            }
-            if (event.which == 39) {
-                console.log("up");
-                gameVM.notifyMovement();
-            }
-            if (event.which == 40) {
-                console.log("up");
-                gameVM.notifyMovement();
-            }
-            if (event.which == 32) {
-                console.log("space bar");
+            if (event.which == 32) { // space bar
                 gameVM.notifyFire();
+            }
+        });
+        document.addEventListener("keydown", function (event) {
+            if (event.which == 38) { //up
+                keys[0] = true;
+            }
+            if (event.which == 37) { //left
+                keys[2] = true;
+            }
+            if (event.which == 39) { //right
+                keys[3] = true;
+            }
+            if (event.which == 40) { //down
+                keys[1] = true;
+            }
+            var isSomeKeyPressed = keys.some(function (val) { return val === true; });
+            if (isSomeKeyPressed && moveInterval === null) {
+                console.log("set");
+                moveInterval = setInterval(function () {
+                    gameVM.notifyMovement();
+                }, 50);
+            }
+        });
+        document.addEventListener("keyup", function (event) {
+            if (event.which == 38) { //up
+                keys[0] = false;
+            }
+            if (event.which == 37) { //left
+                keys[2] = false;
+            }
+            if (event.which == 39) { //right
+                keys[3] = false;
+            }
+            if (event.which == 40) { //down
+                keys[1] = false;
+            }
+            var isSomeKeyPressed = keys.some(function (val) { return val === true; });
+            if (!isSomeKeyPressed) {
+                clearInterval(moveInterval);
+                moveInterval = null;
             }
         });
     }

@@ -4,7 +4,6 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var path = require('path');
 const bodyParser = require("body-parser");
-
 var baseDir = __dirname.slice(0, __dirname.lastIndexOf(path.sep)) + path.sep + "tanktrouble";
 var port = 8080;
 
@@ -36,7 +35,7 @@ app.get('/gameRoom', function (req, res) {
 
 app.post("/login", function (req, res) {
     console.log('POST request to login');
-    players.push(new Player(req.body.id, req.body.email, req.body.email));
+    players[req.body.id] = new Player(req.body.id, req.body.email, req.body.name);
     res.send(JSON.stringify({
         id: req.body.id,
         goTo: "gameRoom"
@@ -45,17 +44,12 @@ app.post("/login", function (req, res) {
 })
 
 io.on('connection', function (socket) {
-    let freeGame = games.find(function(g){ return g.isFull() == false; });
-    socket.join(freeGame.id);
-    freeGame.addNewPlayer(socket);
-    addNewPlayer(socket, freeGame);
-    socket.emit("gridReady", freeGame.getGridInfo());
-    if (players.length % 2 == 0) {
+    console.log('a user connected');
+    addNewPlayer(socket);
+    if (Object.keys(players).length % 2 == 0) {
         games.push(new Game(games.length + 1));
     }
 });
-
-
 
 process.on('uncaughtException', function (exception) {
     // handle or ignore error
@@ -64,21 +58,20 @@ process.on('uncaughtException', function (exception) {
 });
 
 // CONSTANTS
-var players = [];
+var players = {};
 var games = [];
 
 /// FUNCTIONS
+function addNewPlayer(socket) {
+    socket.on('playerReady', function (playerId) {
+        var freeGame = games.find(function (g) { return g.isFull() == false; });
+        socket.join(freeGame.id);
+        var player = players[playerId];
+        player.setSocket(socket);
+        freeGame.addNewPlayer(player);
+    });
 
-function addNewPlayer(socket, game) {
-    console.log('a user connected');
-    socket.on('playerMove', (moveData) => {
-        // console.log("playermove");
-        // console.log(moveData.coords);
-        socket.to(game.id).emit('playerMove', moveData);
-    });
-    socket.on('disconnect', function () {
-        console.log('a user disconnected');
-    });
+    socket.emit("gridReady", game.getGridInfo());
 }
 //GRID
 
@@ -87,13 +80,20 @@ var Player = function (id, email, name) {
     this.id = id;
     this.email = email;
     this.name = name;
+    this.socket = null;
     this.isReady = false;
+
+    self.setSocket = function (socket) {
+        self.socket = socket;
+        this.isReady = true;
+    }
 }
 
 var Game = function (id) {
     var self = this;
+    this.state = "waitingPlayers";
     this.grid = null;
-    this.id = "game"+id;
+    this.id = "game" + id;
     this.maxHlines = 5;
     this.maxVlines = 8;
     this.arenaHeight = 500;
@@ -119,13 +119,52 @@ var Game = function (id) {
         return j <= 0 || j >= self.maxVlines;
     }
 
-    self.addNewPlayer = function (socket) {
-        self.players.push(socket);
-        socket.emit("playerId", self.players.length)
+    function _addNewPlayer(player){
+        var socket = player.socket;
+        socket.on('playerMove', (moveData) => {
+            socket.to(self.id).emit('playerMove', moveData);
+        });
+    
+        socket.on('disconnect', function () {
+            // game.removePlayer(socket);
+            console.log('a user disconnected');
+        });
+    
+        socket.on('leave', function () {
+            game.removePlayer(socket);
+            console.log('a user disconnected');
+        });
+    
+        socket.on('fireBullet', function () {
+            socket.to(game.id).emit("fireBullet");
+        });
+    
+        socket.on('playerName', function (name) {
+            game.setPlayerName(socket.id, name);
+        });
     }
 
-    self.removePlayer = function () {
-        throw "TODO";
+    function startGameIfFull(){
+        if(self.players.length < 2) return
+        self.state = "running";
+        self.players[0].socket.emit("playersReady",self.players[1].name);
+        self.players[1].socket.emit("playersReady",self.players[0].name);
+    }
+
+    self.addNewPlayer = function (player) {
+        _addNewPlayer(player);
+        self.players.push(player);
+        player.socket.emit("playerId", self.players.length)
+        startGameIfFull();
+    }
+
+    self.removePlayer = function (socket) {
+        var index = self.players.find(s => socket.id == s.id);
+        self.players.splice(index, 1);
+    }
+
+    self.setPlayerName = function (socketId, name) {
+
     }
 
     self.isFull = function () {
@@ -158,6 +197,8 @@ var Game = function (id) {
         var widthPerRect = self.arenaWidth / self.maxVlines;
         var heightPerRect = self.arenaHeight / self.maxHlines;
         return {
+            arenaWidth: self.arenaWidth,
+            arenaHeight: self.arenaHeight,
             horGrid: self.horGrid,
             verGrid: self.verGrid,
             hLines: self.hLines,
