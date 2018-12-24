@@ -2,27 +2,31 @@ package bg.tank.trouble.server;
 
 public class Room {
 
-    Room(int roomLimit, String name) {
-        this.roomLimit = roomLimit;
+    static final int ROOM_LIMIT = 2;
+    
+    Room(String name) {
         this.name = name;
-        playerCnt = 1;
+        this.playerCnt = 1;
+        
+        this.grid = new Grid();
     }
-
-    private int roomLimit;
 
     private int playerCnt;
 
     private String name;
+    
 
     public String getName() {
         return name;
     }
 
     public boolean tryToJoin() {
-        if (playerCnt < roomLimit) {
+        if (playerCnt < ROOM_LIMIT) {
             playerCnt++;
             return true;
         }
         return false;
     }
+    
+    private Grid grid;
 }
