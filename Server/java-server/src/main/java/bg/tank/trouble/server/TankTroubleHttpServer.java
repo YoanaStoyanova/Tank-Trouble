@@ -11,6 +11,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -55,11 +56,12 @@ public class TankTroubleHttpServer {
         HttpHandler httpHandler = new HttpHandler() {
             public void handle(HttpExchange httpExchange) throws IOException {
                 URI uri = httpExchange.getRequestURI();
-                System.out.println("looking for: " + uri.getPath());
+                //System.out.println("looking for: " + uri.getPath());
                 String path = "." + uri.getPath();
                 File data = new File(path).getCanonicalFile();
-                System.out.println(data);
-                System.out.println(data.isFile());
+                if (!data.isFile()) {
+                	throw new FileNotFoundException();
+                }
                 httpExchange.sendResponseHeaders(200, data.length());
                 OutputStream os = httpExchange.getResponseBody();
                 FileInputStream fs = new FileInputStream(data);
@@ -112,8 +114,10 @@ public class TankTroubleHttpServer {
                 System.out.println("looking for: " + uri.getPath());
                 String path = "." + uri.getPath();
                 File data = new File("./startGame.html").getCanonicalFile();
-                System.out.println(data);
-                System.out.println(data.isFile());
+                
+                if (!data.isFile()) {
+                	throw new FileNotFoundException();
+                }
                 httpExchange.sendResponseHeaders(200, data.length());
                 OutputStream os = httpExchange.getResponseBody();
                 FileInputStream fs = new FileInputStream(data);

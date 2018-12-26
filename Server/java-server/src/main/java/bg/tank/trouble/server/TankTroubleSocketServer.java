@@ -18,7 +18,8 @@ public class TankTroubleSocketServer {
 		server = new SocketIOServer(cfg);
 		addConnectionListener();
 		addPlayerMoveEventListener();
-		currentRoom = null;
+		addPlayerReadyEventListener();
+		currentRoom = new Room(UUID.randomUUID().toString());
 		playerToRoom = new HashMap<UUID, Room>();
 		server.start();
 
@@ -27,25 +28,38 @@ public class TankTroubleSocketServer {
 	private synchronized void addConnectionListener() {
 		server.addConnectListener(new ConnectListener() {
 			public void onConnect(SocketIOClient socketIOClient) {
-				if (currentRoom == null || !currentRoom.tryToJoin()) {
-					currentRoom = new Room(UUID.randomUUID().toString());
-				}
+				/*
+				 * this handled adding client to a room before
+				 * could be used later 
+				 */
 
+				System.out.println("Player: " + socketIOClient.getSessionId() + " connected");
+				socketIOClient.sendEvent("gridReady", currentRoom.getGridInfo());
+			}
+		});
+		
+		
+	}
+
+	private synchronized void addPlayerReadyEventListener() {
+		server.addEventListener("playerReady", String.class, new DataListener<String>() {
+			public void onData(SocketIOClient socketIOClient, String s, AckRequest ackRequest) throws Exception {
 				/* 
 				 * maybe we can give the responsibility for that socket to
 				 * the room it is in. Client socket object is limited though
 				 * and we can't give it handlers
 				 */
+				currentRoom.addPlayer(socketIOClient.getSessionId());
+				System.out.println("Player: " + socketIOClient.getSessionId() + " is ready");
 				playerToRoom.put(socketIOClient.getSessionId(), currentRoom);
 				socketIOClient.joinRoom(currentRoom.getName());
-			}
-		});
-	}
+				// try returning JSONObject directly; maybe needs to be String-ed
 
-	private void addPlayerReadyEventListener() {
-		server.addEventListener("playerReady", String.class, new DataListener<String>() {
-			public void onData(SocketIOClient socketIOClient, String s, AckRequest ackRequest) throws Exception {
-
+				
+				if (currentRoom.isReadyToStart()) {
+					currentRoom.startGame(server);
+					currentRoom = new Room(UUID.randomUUID().toString());
+				}
 			}
 		});
 	}
@@ -64,6 +78,8 @@ public class TankTroubleSocketServer {
 		});
 	}
 
+
+	
 	@Override
 	public void finalize() {
 		server.getAllClients().clear();

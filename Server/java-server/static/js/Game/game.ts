@@ -184,11 +184,11 @@ class Game {
     }
 
     private preload() {
-        game.load.image('hLine', 'assets/hLine.jpg');
-        game.load.image('vLine', 'assets/vLine.jpg');
-        game.load.image('player', 'assets/redTank.jpg');
-        game.load.image('opponent', 'assets/blueTank.jpg');
-        game.load.image('bullet', 'assets/bullet.png');
+    game.load.image('hLine', 'static/assets/hLine.jpg');
+    game.load.image('vLine', 'static/assets/vLine.jpg');
+    game.load.image('player', 'static/assets/redTank.jpg');
+    game.load.image('opponent', 'static/assets/blueTank.jpg');
+    game.load.image('bullet', 'static/assets/bullet.png');
     }
 
     private createPlayer(old, coodsX, coordsY, id, Immidiate, controls): any {

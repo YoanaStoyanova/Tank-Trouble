@@ -274,11 +274,11 @@ function startGame() {
 }
 
 function preload() {
-	game.load.image('hLine', 'assets/hLine.jpg');
-	game.load.image('vLine', 'assets/vLine.jpg');
-	game.load.image('tank1', 'assets/redTank.jpg');
-	game.load.image('tank2', 'assets/blueTank.jpg');
-	game.load.image('bullet', 'assets/bullet.png');
+	game.load.image('hLine', 'static/assets/hLine.jpg');
+	game.load.image('vLine', 'static/assets/vLine.jpg');
+	game.load.image('tank1', 'static/assets/redTank.jpg');
+	game.load.image('tank2', 'static/assets/blueTank.jpg');
+	game.load.image('bullet', 'static/assets/bullet.png');
 }
 
 function create() {
