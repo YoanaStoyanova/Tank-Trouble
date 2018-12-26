@@ -49,6 +49,10 @@ public class TankTroubleSocketServer {
 				 * the room it is in. Client socket object is limited though
 				 * and we can't give it handlers
 				 */
+	
+				/*
+				 * consider using s for player identification in the playerToRoom map
+				 */
 				currentRoom.addPlayer(socketIOClient.getSessionId());
 				System.out.println("Player: " + socketIOClient.getSessionId() + " is ready");
 				playerToRoom.put(socketIOClient.getSessionId(), currentRoom);

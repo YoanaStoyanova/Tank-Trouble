@@ -2,6 +2,7 @@ package bg.tank.trouble.server;
 import java.util.UUID;
 import org.json.JSONObject;
 
+import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
 
 public class Room {
@@ -49,14 +50,17 @@ public class Room {
     	System.out.println("Starting game");
     	grid.changeToRunning();
     	for (UUID playerId : players) {
+    		System.out.println("Sending playersReady from " + playerId);
 			sendToOthers(playerId, server, "playersReady", playerId);
 		}
     }
 
-    public void sendToOthers(UUID sender, SocketIOServer server, String eventName, Object data) {
-     	server.getRoomOperations(name).getClients().parallelStream()
-     	.filter(client -> client.getSessionId() != sender)
-     	.forEach(client -> client.sendEvent(eventName, data));
+    public void sendToOthers(UUID sender, SocketIOServer server, String eventName, Object data) {    	
+     	for (SocketIOClient client : server.getRoomOperations(name).getClients()) {
+			if (!client.getSessionId().equals(sender)) {
+				client.sendEvent(eventName, data);
+			}
+		}
      }
     
     private Grid grid;
