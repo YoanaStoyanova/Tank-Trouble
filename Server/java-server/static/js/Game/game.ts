@@ -52,6 +52,7 @@ class Game {
         });
     }
     private opponentMove = (data) => {
+        console.log("opponent moves");
         this.opponent().x = data.coords.x;
         this.opponent().y = data.coords.y;
         this.opponent().angle = data.angle

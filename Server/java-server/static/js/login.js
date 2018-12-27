@@ -4,7 +4,7 @@
         FB.login(function (response) {
             if (response.status === "connected") {
                 FB.api(`/${response.authResponse.userID}`, { fields: "email,name" }, function (userInfo) {
-                    console.log(userInfo);
+                    //console.log(userInfo);
                     sessionStorage.setItem("name", userInfo.name);
                     fetch(serverAddres + "login", {
                         method: "POST",
