@@ -80,8 +80,9 @@ class Game {
 
     private drawGrid() {
         var generatedGridInfo = this.gridInfo();
-        for (var i = 0; i < generatedGridInfo.maxHlines + 1; i++) {
-            for (var j = 0; j < generatedGridInfo.maxVlines + 1; j++) {
+
+        for (var i = 0; i < generatedGridInfo.maxHlines; i++) {
+            for (var j = 0; j < generatedGridInfo.maxVlines; j++) {
                 if (generatedGridInfo.horGrid[i][j] == true) {
                     generatedGridInfo.hLines[i][j] = grid.create(generatedGridInfo.widthPerRect * j, (generatedGridInfo.heightPerRect * i), 'hLine');
                     generatedGridInfo.hLines[i][j].body.immovable = true;

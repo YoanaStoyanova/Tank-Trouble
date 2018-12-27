@@ -41,6 +41,7 @@ public class TankTroubleSocketServer {
 				 */
 
 				System.out.println("Player: " + socketIOClient.getSessionId() + " connected");
+
 				System.out.println("gridInfo: " + currentRoom.getGridInfo());
 				socketIOClient.sendEvent("gridReady", currentRoom.getGridInfo());
 			}
@@ -94,7 +95,12 @@ public class TankTroubleSocketServer {
 
 				currentRoom.addPlayer(socketIOClient.getSessionId(),
 						playerIdToPlayerName.get(socketIOClient.getSessionId()));
-
+				
+				/*
+				 * Start from 1 since client expects starting from 1
+				 */
+				socketIOClient.sendEvent("playerId", currentRoom.getPlayerCnt());
+			
 				System.out.println("Player: " + socketIOClient.getSessionId() + " is ready");
 				playerToRoom.put(socketIOClient.getSessionId(), currentRoom);
 				socketIOClient.joinRoom(currentRoom.getName());
@@ -143,9 +149,6 @@ public class TankTroubleSocketServer {
 	private void addFireBulletEventListener() {
 		server.addEventListener("fireBullet", String.class, new DataListener<String>() {
 			public void onData(SocketIOClient socketIOClient, String s, AckRequest ackRequest) throws Exception {
-				// System.out.println("playerMove");
-				// System.out.println(playerMove.getAngle() + ' ' + playerMove.getPlayer() + " "
-				// + playerMove.getCoords().getX() + " " + playerMove.getCoords().getY());
 				Room room = playerToRoom.get(socketIOClient.getSessionId());
 				room.sendToOthers(socketIOClient.getSessionId(), server, "fireBullet", "");
 				System.out.println("player " + socketIOClient.getSessionId() + " fired in room " + room.getName());

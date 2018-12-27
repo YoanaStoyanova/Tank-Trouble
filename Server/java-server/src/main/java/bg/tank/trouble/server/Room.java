@@ -20,9 +20,13 @@ public class Room {
 		this.players = new ArrayList<UUID>(ROOM_LIMIT);
 		this.idToPlayerName = new HashMap<UUID, String>();
 	}
+	
+	public int getPlayerCnt() {
+		return playerCnt;
+	}
 
-	public JSONObject getGridInfo() {
-		return grid.getGridJSON();
+	public Grid getGridInfo() {
+		return grid;//.getGridJSON();
 	}
 
 	private int playerCnt;
@@ -75,6 +79,7 @@ public class Room {
 		if(!players.remove(playerId)) {
 			System.out.println("Couldn't find player to remove: " + playerId);
 		}
+		--playerCnt;
 	}
 
 	private Grid grid;

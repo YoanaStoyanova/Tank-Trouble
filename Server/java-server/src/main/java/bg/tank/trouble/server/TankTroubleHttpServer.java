@@ -86,7 +86,6 @@ public class TankTroubleHttpServer {
                 System.out.println(httpExchange.getRequestBody());
                 ObjectMapper mapper = new ObjectMapper();
                 Player pl = mapper.readValue(httpExchange.getRequestBody(), Player.class);
-                System.out.println(pl.getEmail());
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("id", pl.id);
                 jsonObject.put("goTo", "gameRoom");
