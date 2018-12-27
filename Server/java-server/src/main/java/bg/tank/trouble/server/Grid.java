@@ -8,7 +8,7 @@ public class Grid {
 
 	private static final int HEIGTH = 500;
 	private static final int WIDTH = 800;
-	private static final double WALL_DENSITY = 0.55;
+	private static final double WALL_DENSITY = 0.0;//55;
 
 	private static final int MAX_H_LINES = 6;
 	private static final int MAX_V_LINES = 9;

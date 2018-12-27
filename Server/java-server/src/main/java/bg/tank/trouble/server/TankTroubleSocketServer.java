@@ -19,13 +19,14 @@ public class TankTroubleSocketServer {
 		addConnectionListener();
 		addPlayerMoveEventListener();
 		addPlayerReadyEventListener();
+		addFireBulletEventListener();
 		currentRoom = new Room(UUID.randomUUID().toString());
 		playerToRoom = new HashMap<UUID, Room>();
 		server.start();
 
 	}
 
-	private synchronized void addConnectionListener() {
+	private void addConnectionListener() {
 		server.addConnectListener(new ConnectListener() {
 			public void onConnect(SocketIOClient socketIOClient) {
 				/*
@@ -76,12 +77,29 @@ public class TankTroubleSocketServer {
 				// System.out.println(playerMove.getAngle() + ' ' + playerMove.getPlayer() + " "
 				// + playerMove.getCoords().getX() + " " + playerMove.getCoords().getY());
 				Room room = playerToRoom.get(socketIOClient.getSessionId());
-				server.getRoomOperations(room.getName()).sendEvent("update", "CHLEN");
+				room.sendToOthers(socketIOClient.getSessionId(), server, "playerMove", playerMove);
 				System.out.println("player " + socketIOClient.getSessionId() + " moves in room " + room.getName());
+				
+			}
+		});
+	}
+	
+	private void addFireBulletEventListener() {
+		server.addEventListener("fireBullet", String.class, new DataListener<String>() {
+			public void onData(SocketIOClient socketIOClient, String s, AckRequest ackRequest)
+					throws Exception {
+				// System.out.println("playerMove");
+				// System.out.println(playerMove.getAngle() + ' ' + playerMove.getPlayer() + " "
+				// + playerMove.getCoords().getX() + " " + playerMove.getCoords().getY());
+				Room room = playerToRoom.get(socketIOClient.getSessionId());
+				room.sendToOthers(socketIOClient.getSessionId(), server, "fireBullet", "");
+				System.out.println("player " + socketIOClient.getSessionId() + " fired in room " + room.getName());
+				
 			}
 		});
 	}
 
+			
 
 	
 	@Override
