@@ -30,6 +30,7 @@ var Game = /** @class */ (function () {
         this.grid = ko.observable(null);
         this.gridInfo = ko.observable(null);
         this.opponentMove = function (data) {
+            console.log("opponent moves");
             _this.opponent().x = data.coords.x;
             _this.opponent().y = data.coords.y;
             _this.opponent().angle = data.angle;

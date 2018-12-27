@@ -4,8 +4,7 @@ class Main {
     public game: Game = null;
     private socket = null;
     constructor() {
-        this.socket = io("localhost:6969");
-        // this.socket.emit("playerMove",{asd:"asd"});
+        this.socket = io("http://localhost:6969");
         this.game = new Game(this.socket);
     }
 }

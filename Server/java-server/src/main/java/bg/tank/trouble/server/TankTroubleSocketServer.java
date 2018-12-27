@@ -73,13 +73,9 @@ public class TankTroubleSocketServer {
 		server.addEventListener("playerMove", PlayerMove.class, new DataListener<PlayerMove>() {
 			public void onData(SocketIOClient socketIOClient, PlayerMove playerMove, AckRequest ackRequest)
 					throws Exception {
-				// System.out.println("playerMove");
-				// System.out.println(playerMove.getAngle() + ' ' + playerMove.getPlayer() + " "
-				// + playerMove.getCoords().getX() + " " + playerMove.getCoords().getY());
 				Room room = playerToRoom.get(socketIOClient.getSessionId());
 				room.sendToOthers(socketIOClient.getSessionId(), server, "playerMove", playerMove);
 				System.out.println("player " + socketIOClient.getSessionId() + " moves in room " + room.getName());
-				
 			}
 		});
 	}
@@ -99,9 +95,6 @@ public class TankTroubleSocketServer {
 		});
 	}
 
-			
-
-	
 	@Override
 	public void finalize() {
 		server.getAllClients().clear();
