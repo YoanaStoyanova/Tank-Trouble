@@ -1,14 +1,13 @@
 package bg.tank.trouble.server;
 
 import java.util.Random;
-
 import org.json.JSONObject;
 
 public class Grid {
 
 	private static final int HEIGTH = 500;
 	private static final int WIDTH = 800;
-	private static final double WALL_DENSITY = 0.0;//55;
+	private static final double WALL_DENSITY = 0.55;
 
 	private static final int MAX_H_LINES = 6;
 	private static final int MAX_V_LINES = 9;
@@ -27,8 +26,8 @@ public class Grid {
 	 * if the string is too big
 	 */
 	public JSONObject getGridJSON() {
-		double widthPerRect = WIDTH / MAX_V_LINES;
-		double heightPerRect = HEIGTH / MAX_H_LINES;
+		double widthPerRect = WIDTH / (double) (MAX_V_LINES - 1);
+		double heightPerRect = HEIGTH / (double) (MAX_H_LINES - 1);
 		
 		JSONObject json = new JSONObject();
 		json.put("arenaWidth", WIDTH);
@@ -50,11 +49,11 @@ public class Grid {
 	}
 	
 	private boolean isPastVerticalBound(int i) {
-		return i <= 0 || i >= MAX_H_LINES;
+		return i <= 0 || i >= (MAX_H_LINES - 1);
 	}
 
 	private boolean isPastHorizontalBound(int j) {
-		return j <= 0 || j >= MAX_V_LINES;
+		return j <= 0 || j >= (MAX_V_LINES - 1);
 	}
 	
 	private boolean checkConnectivity() {
