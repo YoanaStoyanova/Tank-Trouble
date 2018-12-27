@@ -59,7 +59,8 @@ public class Grid {
 	
 	private String state;
 	private Random RNG;
-	
+    private int dfsGrid[][];
+    private List<Integer> connectedList;
 	
 	
 	
@@ -97,18 +98,6 @@ public class Grid {
 		return j <= 0 || j >= (MAX_V_LINES - 1);
 	}
 	
-	private boolean checkConnectivity() {
-		
-		return false;
-	}
-	private void ensureConnectivity() {
-		
-		if (checkConnectivity()) {
-			return;
-		}
-		
-		/* code to remove walls that impede connectivity */
-	}
 	 
 	public void changeToRunning() {
 		state = "running";
