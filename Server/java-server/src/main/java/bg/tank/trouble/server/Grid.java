@@ -4,12 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.json.JSONObject;
-
-
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -62,30 +56,6 @@ public class Grid {
     private int dfsGrid[][];
     private List<Integer> connectedList;
 	
-	
-	
-	/*
-	 * Directly returning a string might not be a good idea
-	 * if the string is too big
-	 */
-//	public JSONObject getGridJSON() {
-//
-//		
-//		JSONObject json = new JSONObject();
-//		json.put("arenaWidth", WIDTH);
-//		json.put("arenaHeight", HEIGTH);
-//		json.put("horGrid", horizontalGrid);
-//		json.put("verGrid", verticalGrid);
-//		json.put("hLines", hLines);
-//		json.put("vLines", vLines);
-//		json.put("widthPerRect", widthPerRect);
-//		json.put("heightPerRect", heightPerRect);
-//		json.put("maxHlines", MAX_H_LINES);
-//		json.put("maxVlines", MAX_V_LINES);
-//		
-//		return json;
-//	}
-//	
 	private boolean shouldPutWall() {
 		return RNG.nextDouble() < WALL_DENSITY;
 	}
