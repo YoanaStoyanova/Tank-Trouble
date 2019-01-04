@@ -1,4 +1,7 @@
 Server/java-server/static/node_modules/
 Server/java-server/.*
+Server/java-server/target/classes/
+Server/java-server/target/generated-sources/
+Server/java-server/target/maven*
 .idea
 .vscode
