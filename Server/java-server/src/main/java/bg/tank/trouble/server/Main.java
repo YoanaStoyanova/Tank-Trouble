@@ -9,11 +9,11 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         Configuration httpConfig = new Configuration();
-        httpConfig.setHostname("localhost");
+        httpConfig.setHostname("54.154.212.251");
         httpConfig.setPort(8080);
 
         Configuration socketConfig = new Configuration();
-        socketConfig.setHostname("localhost");
+        socketConfig.setHostname("54.154.212.251");
         socketConfig.setPort(6969);
 
         /* set multithreading configuration */
