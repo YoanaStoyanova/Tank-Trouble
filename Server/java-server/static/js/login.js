@@ -1,5 +1,5 @@
 (function () {
-    var serverAddress = "https://0.0.0.0:8080/"
+    var serverAddress = document.location.href;
     var login = function () {
         FB.login(function (response) {
             if (response.status === "connected") {
