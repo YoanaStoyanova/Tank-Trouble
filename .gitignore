@@ -1,5 +1,7 @@
 Server/java-server/static/node_modules/
 Server/java-server/.*
+Server/java-server/mycert.keystore
+Server/node_modules
 Server/java-server/target/classes/
 Server/java-server/target/generated-sources/
 Server/java-server/target/maven*

@@ -2,34 +2,81 @@ package bg.tank.trouble.server;
 
 import com.corundumstudio.socketio.Configuration;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.net.httpserver.HttpContext;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
-import jdk.nashorn.api.scripting.JSObject;
+import com.sun.net.httpserver.*;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.OutputStream;
+import javax.net.ssl.*;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.security.*;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 
 public class TankTroubleHttpServer {
 
-    private HttpServer server;
+    private HttpsServer server;
 
-    TankTroubleHttpServer(Configuration cfg) throws IOException {
+    TankTroubleHttpServer(Configuration cfg) throws IOException, UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         String host = cfg.getHostname();
         int port = cfg.getPort();
-        server = HttpServer.create(new InetSocketAddress(host, port), 0);
+        SSLContext sslContext = loadCert();
+        server = HttpsServer.create(new InetSocketAddress(host, port), 0);
+        configureSSLContext(sslContext);
         getLoginContext();
         getGameRoomContext();
         add();
         getRootContext();
         server.start();
+        System.out.println(server.getHttpsConfigurator().getSSLContext());
+    }
+
+    private void configureSSLContext(SSLContext sslContext) {
+        server.setHttpsConfigurator(new HttpsConfigurator(sslContext) {
+            public void configure(HttpsParameters params) {
+                try {
+                    // initialise the SSL context
+                    SSLContext c = SSLContext.getDefault();
+                    SSLEngine engine = c.createSSLEngine();
+                    params.setNeedClientAuth(false);
+                    params.setCipherSuites(engine.getEnabledCipherSuites());
+                    params.setProtocols(engine.getEnabledProtocols());
+                    // get the default parameters
+                    SSLParameters defaultSSLParameters = c.getDefaultSSLParameters();
+                    params.setSSLParameters(defaultSSLParameters);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    System.out.println("Failed to create HTTPS server");
+                }
+            }
+        });
+    }
+
+    private SSLContext loadCert() throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, KeyManagementException {
+        // load certificate
+        String keystoreFilename = "./mycert.keystore";
+        char[] storepass = "mypassword".toCharArray();
+        char[] keypass = "mypassword".toCharArray();
+        String alias = "mycert";
+        FileInputStream fIn = new FileInputStream(keystoreFilename);
+        KeyStore keystore = KeyStore.getInstance("pkcs12");
+        keystore.load(fIn, storepass);
+        // display certificate
+        Certificate cert = keystore.getCertificate(alias);
+        System.out.println(cert);
+        // setup the key manager factory
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+        kmf.init(keystore, keypass);
+        // setup the trust manager factory
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+        tmf.init(keystore);
+        // create ssl context
+        SSLContext sslContext = SSLContext.getInstance("SSL");
+        sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+
+        return sslContext;
+
+
     }
 
     private void getRootContext() {
@@ -60,7 +107,7 @@ public class TankTroubleHttpServer {
                 String path = "." + uri.getPath();
                 File data = new File(path).getCanonicalFile();
                 if (!data.isFile()) {
-                	throw new FileNotFoundException();
+                    throw new FileNotFoundException();
                 }
                 httpExchange.sendResponseHeaders(200, data.length());
                 OutputStream os = httpExchange.getResponseBody();
@@ -104,7 +151,7 @@ public class TankTroubleHttpServer {
 
     }
 
-    private void getGameRoomContext(){
+    private void getGameRoomContext() {
         HttpContext context = server.createContext("/gameRoom");
 
         HttpHandler handler = new HttpHandler() {
@@ -113,9 +160,9 @@ public class TankTroubleHttpServer {
                 System.out.println("looking for: " + uri.getPath());
                 String path = "." + uri.getPath();
                 File data = new File("./startGame.html").getCanonicalFile();
-                
+
                 if (!data.isFile()) {
-                	throw new FileNotFoundException();
+                    throw new FileNotFoundException();
                 }
                 httpExchange.sendResponseHeaders(200, data.length());
                 OutputStream os = httpExchange.getResponseBody();

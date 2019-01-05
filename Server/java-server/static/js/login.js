@@ -1,12 +1,12 @@
 (function () {
-    var serverAddres = "http://localhost:8080/"
+    var serverAddress = "https://0.0.0.0:8080/"
     var login = function () {
         FB.login(function (response) {
             if (response.status === "connected") {
                 FB.api(`/${response.authResponse.userID}`, { fields: "email,name" }, function (userInfo) {
                     //console.log(userInfo);
                     sessionStorage.setItem("name", userInfo.name);
-                    fetch(serverAddres + "login", {
+                    fetch(serverAddress + "login", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json; charset=utf-8",
@@ -15,9 +15,9 @@
                     }).then(res => res.json())
                         .then(response => {
                             sessionStorage.setItem("userId", response.id);
-                            document.location = serverAddres + `${response.goTo}`;
+                            document.location = serverAddress + `${response.goTo}`;
                         });
-                    //log in at the server and save the responce to session storage or local storage
+                    //log in at the server and save the response to session storage or local storage
                 });
                 // document.location = "http://localhost:8080/PissTanks/tanktrouble/startGame.html"
             }
