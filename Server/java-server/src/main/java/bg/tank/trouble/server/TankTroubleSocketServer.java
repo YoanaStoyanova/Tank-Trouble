@@ -141,7 +141,6 @@ public class TankTroubleSocketServer {
 					return;
 				}
 				room.sendToOthers(socketIOClient.getSessionId(), server, "playerMove", playerMove);
-				System.out.println("player " + socketIOClient.getSessionId() + " moves in room " + room.getName());
 			}
 		});
 	}
@@ -151,7 +150,6 @@ public class TankTroubleSocketServer {
 			public void onData(SocketIOClient socketIOClient, String s, AckRequest ackRequest) throws Exception {
 				Room room = playerToRoom.get(socketIOClient.getSessionId());
 				room.sendToOthers(socketIOClient.getSessionId(), server, "fireBullet", "");
-				System.out.println("player " + socketIOClient.getSessionId() + " fired in room " + room.getName());
 			}
 		});
 	}
