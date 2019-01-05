@@ -2,7 +2,9 @@ package bg.tank.trouble.server;
 
 import com.corundumstudio.socketio.Configuration;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -22,6 +24,10 @@ public class Main {
         socketConfig.setHostname(args[0]);
 
         socketConfig.setPort(6969);
+        socketConfig.setKeyStorePassword("mypassword");
+        String keystoreFilename = "./mycert.keystore";
+        FileInputStream fIn = new FileInputStream(keystoreFilename);
+        socketConfig.setKeyStore(fIn);
 
         /* set multithreading configuration */
         socketConfig.setBossThreads(1);

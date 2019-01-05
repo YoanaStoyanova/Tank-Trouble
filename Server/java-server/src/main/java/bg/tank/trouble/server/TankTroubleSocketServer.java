@@ -27,8 +27,8 @@ public class TankTroubleSocketServer {
 		addPlayerLeaveEventListener();
 
 		currentRoom = new Room(UUID.randomUUID().toString());
-		playerToRoom = new HashMap<UUID, Room>();
-		playerIdToPlayerName = new HashMap<UUID, String>();
+		playerToRoom = new HashMap<>();
+		playerIdToPlayerName = new HashMap<>();
 		server.start();
 
 	}
