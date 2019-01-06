@@ -4,6 +4,7 @@ import com.corundumstudio.socketio.Configuration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.*;
 import org.json.JSONObject;
+import java.util.concurrent.Executors;
 
 import javax.net.ssl.*;
 import java.io.*;
@@ -25,8 +26,9 @@ public class TankTroubleHttpServer {
         configureSSLContext(sslContext);
         getLoginContext();
         getGameRoomContext();
-        add();
+        getStaticContext();
         getRootContext();
+        server.setExecutor(Executors.newCachedThreadPool());
         server.start();
         System.out.println(server.getHttpsConfigurator().getSSLContext());
     }
@@ -99,11 +101,11 @@ public class TankTroubleHttpServer {
         });
     }
 
-    private void add() {
+    private void getStaticContext() {
         HttpHandler httpHandler = new HttpHandler() {
             public void handle(HttpExchange httpExchange) throws IOException {
                 URI uri = httpExchange.getRequestURI();
-                //System.out.println("looking for: " + uri.getPath());
+
                 String path = "." + uri.getPath();
                 File data = new File(path).getCanonicalFile();
                 if (!data.isFile()) {
@@ -119,6 +121,7 @@ public class TankTroubleHttpServer {
                 }
                 fs.close();
                 os.close();
+                System.out.println("got : " + uri.getPath());
             }
         };
         HttpContext context = server.createContext("/static", httpHandler);
@@ -141,8 +144,10 @@ public class TankTroubleHttpServer {
 
                 httpExchange.sendResponseHeaders(200, response.length());
                 OutputStream os = httpExchange.getResponseBody();
+                System.out.println("starting to write after login");
                 os.write(response.getBytes());
                 os.close();
+                System.out.println("closing stream after login");
 
             }
         };
@@ -157,7 +162,6 @@ public class TankTroubleHttpServer {
         HttpHandler handler = new HttpHandler() {
             public void handle(HttpExchange httpExchange) throws IOException {
                 URI uri = httpExchange.getRequestURI();
-                System.out.println("looking for: " + uri.getPath());
                 String path = "." + uri.getPath();
                 File data = new File("./startGame.html").getCanonicalFile();
 
@@ -165,7 +169,9 @@ public class TankTroubleHttpServer {
                     throw new FileNotFoundException();
                 }
                 httpExchange.sendResponseHeaders(200, data.length());
+
                 OutputStream os = httpExchange.getResponseBody();
+
                 FileInputStream fs = new FileInputStream(data);
                 final byte[] buffer = new byte[0x10000];
                 int count = 0;
@@ -174,6 +180,7 @@ public class TankTroubleHttpServer {
                 }
                 fs.close();
                 os.close();
+                System.out.println("Getting game room finished: " + uri.getPath());
             }
         };
 

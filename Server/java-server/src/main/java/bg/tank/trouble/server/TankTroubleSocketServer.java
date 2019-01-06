@@ -68,7 +68,6 @@ public class TankTroubleSocketServer {
 	}
 
 	private void addPlayerLeaveEventListener() {
-
 		server.addEventListener("leave", String.class, new DataListener<String>() {
 			public synchronized void onData(SocketIOClient client, String s, AckRequest ackRequest) throws Exception {
 				System.out.println("left: " + client.getSessionId());
@@ -125,6 +124,8 @@ public class TankTroubleSocketServer {
 				 * This means that if we get playerReady but we have no entry for the player
 				 * name something is really fkd up
 				 */
+
+				System.out.println("Got playerName from: " + playerName);
 				playerIdToPlayerName.put(socketIOClient.getSessionId(), playerName);
 			}
 		});
@@ -149,6 +150,7 @@ public class TankTroubleSocketServer {
 		server.addEventListener("fireBullet", String.class, new DataListener<String>() {
 			public void onData(SocketIOClient socketIOClient, String s, AckRequest ackRequest) throws Exception {
 				Room room = playerToRoom.get(socketIOClient.getSessionId());
+				System.out.println("Firing bullet from:" + socketIOClient.getSessionId());
 				room.sendToOthers(socketIOClient.getSessionId(), server, "fireBullet", "");
 			}
 		});
