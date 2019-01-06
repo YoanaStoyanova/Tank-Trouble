@@ -34,6 +34,7 @@ ko.bindingHandlers.fightArena = {
         var moveInterval = null;
         document.addEventListener("keydown", function (event) {
             if (event.which == 32) { // space bar
+                console.log("fire made");
                 gameVM.notifyFire();
             }
         });
@@ -52,7 +53,6 @@ ko.bindingHandlers.fightArena = {
             }
             var isSomeKeyPressed = keys.some(function (val) { return val === true; });
             if (isSomeKeyPressed && moveInterval === null) {
-                console.log("set");
                 moveInterval = setInterval(function () {
                     gameVM.notifyMovement();
                 }, 50);
@@ -76,6 +76,18 @@ ko.bindingHandlers.fightArena = {
                 clearInterval(moveInterval);
                 moveInterval = null;
             }
+        });
+        var subsc = gameVM.isStartScreen.subscribe(function () {
+            element.focus();
+        });
+        var subscEndScreen = gameVM.isGameOver.subscribe(function () {
+            element.focus();
+        });
+        document.addEventListener('focus', function () {
+            element.focus();
+        });
+        document.addEventListener('blur', function () {
+            element.focus();
         });
     }
 };
