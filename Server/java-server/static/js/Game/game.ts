@@ -200,7 +200,7 @@ class Game {
         player.controls = controls;
         return player;
     }
-
+    
     private create() {
         game.stage.backgroundColor = "#FFFFFF";
         game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -235,8 +235,13 @@ class Game {
         this.bullets.destroy(true, true);
 
         this.drawGrid();
-        this.player(this.createTank(this.player(), 20, 20, 'player', true));
-        this.opponent(this.createTank(this.opponent(), 780, 480, 'opponent', false));
+        if (this.id == 1) {
+            this.player(this.createPlayer(this.player(), 20, 20, "player", true, control1));
+            this.opponent(this.createPlayer(this.opponent(), 780, 480, 'opponent', false, null));
+        } else {
+            this.player(this.createPlayer(this.opponent(), 780, 480, 'opponent', false, control1));
+            this.opponent(this.createPlayer(this.player(), 20, 20, "player", true, null));
+        }
         this.player().controls = control1;
         this.player().bullets = 0;
         this.opponent().bullets = 0;
