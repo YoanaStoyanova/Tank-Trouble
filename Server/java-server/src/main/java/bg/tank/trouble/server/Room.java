@@ -76,7 +76,9 @@ public class Room {
 		 */
 		if(!players.remove(playerId)) {
 			System.out.println("Couldn't find player to remove: " + playerId);
+			return;
 		}
+		idToPlayerName.remove(playerId);
 		--playerCnt;
 	}
 

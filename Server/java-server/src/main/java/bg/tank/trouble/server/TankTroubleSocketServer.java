@@ -59,10 +59,12 @@ public class TankTroubleSocketServer {
 				Room room = playerToRoom.get(clientId);
 				if (room == null) {
 					System.out.println("Room has been deleted");
-					return;
+				} else {
+					room.removePlayer(clientId);
 				}
-				room.removePlayer(clientId);
 				playerIdToPlayerName.remove(clientId);
+				playerToRoom.remove(clientId);
+				/* references to this room should be 0 now so it must get destroyed */
 			}
 		});
 	}
@@ -87,21 +89,22 @@ public class TankTroubleSocketServer {
 				/*
 				 * consider using s for player identification in the playerToRoom map
 				 */
-				if (playerIdToPlayerName.get(socketIOClient.getSessionId()) == null) {
-					System.out.println("No record for player " + socketIOClient.getSessionId());
+
+				UUID clientId = socketIOClient.getSessionId();
+				if (playerIdToPlayerName.get(clientId) == null) {
+					System.out.println("No record for player " + clientId);
 					return;
 				}
 
-				currentRoom.addPlayer(socketIOClient.getSessionId(),
-						playerIdToPlayerName.get(socketIOClient.getSessionId()));
+				currentRoom.addPlayer(clientId, playerIdToPlayerName.get(clientId));
 				
 				/*
-				 * Start from 1 since client expects starting from 1
+				 * Start from 1 since client side expects starting from 1
 				 */
 				socketIOClient.sendEvent("playerId", currentRoom.getPlayerCnt());
 			
-				System.out.println("Player: " + socketIOClient.getSessionId() + " is ready");
-				playerToRoom.put(socketIOClient.getSessionId(), currentRoom);
+				System.out.println("Player: " + clientId + " is ready");
+				playerToRoom.put(clientId, currentRoom);
 				socketIOClient.joinRoom(currentRoom.getName());
 				// try returning JSONObject directly; maybe needs to be String-ed
 
