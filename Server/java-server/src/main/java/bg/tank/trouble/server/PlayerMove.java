@@ -23,7 +23,7 @@ public class PlayerMove {
     @JsonProperty("coords")
     private Coords coords;
     @JsonProperty("angle")
-    private String angle;
+    private Double angle;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
@@ -48,12 +48,12 @@ public class PlayerMove {
     }
 
     @JsonProperty("angle")
-    public String getAngle() {
+    public Double getAngle() {
         return angle;
     }
 
     @JsonProperty("angle")
-    public void setAngle(String angle) {
+    public void setAngle(Double angle) {
         this.angle = angle;
     }
 

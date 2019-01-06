@@ -30,10 +30,19 @@ var Game = /** @class */ (function () {
         this.grid = ko.observable(null);
         this.gridInfo = ko.observable(null);
         this.opponentMove = function (data) {
-            console.log("opponent moves");
             _this.opponent().x = data.coords.x;
             _this.opponent().y = data.coords.y;
             _this.opponent().angle = data.angle;
+        };
+        this.getPlayerFireCoords = function (player) {
+            var data = {
+                x: player.x,
+                y: player.y,
+                angle: player.angle,
+                isPlayerOne: player.isPlayerOne
+            };
+            console.log(data);
+            return data;
         };
         this.notifyMovement = function () {
             var data = {
@@ -47,10 +56,11 @@ var Game = /** @class */ (function () {
             _this.socket.emit("playerMove", data);
         };
         this.notifyFire = function () {
-            _this.socket.emit("fireBullet");
+            var coords = _this.getPlayerFireCoords(_this.player());
+            _this.socket.emit("fireBullet", coords);
         };
-        this.opponentFire = function () {
-            _this.createBullet(_this.opponent());
+        this.opponentFire = function (fireCoords) {
+            _this.createBullet(fireCoords);
         };
         this.registerForSocketEvents();
         this.playerName(sessionStorage["name"]);
@@ -60,7 +70,7 @@ var Game = /** @class */ (function () {
         var _this = this;
         this.socket.on('connect', function () {
             _this.socket.on("playerMove", _this.opponentMove);
-            _this.socket.on("fireBullet", _this.opponentFire);
+            _this.socket.on("fireBullet", function (fireCoords) { return _this.opponentFire(fireCoords); });
             _this.socket.on("gridReady", function (generatedGrid) { return _this.gridInfo(generatedGrid); });
             _this.socket.on("playerId", function (id) { return _this.id = id; });
             _this.socket.on("playerName", function (name) { return _this.opponentName(name); });
@@ -246,6 +256,7 @@ var Game = /** @class */ (function () {
         }
         if (this.keyboard.isDown(controls.fire) && this.keyboard.justPressed(controls.fire, this.bulletDelay) && playerBullets < this.maxBullets) {
             this.createBullet(player);
+            this.notifyFire();
         }
     };
     Game.prototype.updatePlayerPosition = function (player) {

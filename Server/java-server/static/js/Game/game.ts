@@ -40,7 +40,7 @@ class Game {
     private registerForSocketEvents() {
         this.socket.on('connect', () => {
             this.socket.on("playerMove", this.opponentMove);
-            this.socket.on("fireBullet", this.opponentFire);
+            this.socket.on("fireBullet", fireCoords => this.opponentFire(fireCoords));
             this.socket.on("gridReady", generatedGrid => this.gridInfo(generatedGrid));
             this.socket.on("playerId", id => this.id = id);
             this.socket.on("playerName", name => this.opponentName(name));
@@ -52,10 +52,20 @@ class Game {
         });
     }
     private opponentMove = (data) => {
-        console.log("opponent moves");
         this.opponent().x = data.coords.x;
         this.opponent().y = data.coords.y;
         this.opponent().angle = data.angle
+    }
+
+    private getPlayerFireCoords = (player) => {
+        let data = {
+            x : player.x,
+            y : player.y,
+            angle : player.angle,
+            isPlayerOne : player.isPlayerOne
+        };
+        console.log(data);
+        return data;
     }
 
     public notifyMovement = () => {
@@ -71,11 +81,12 @@ class Game {
     }
 
     public notifyFire = () => {
-        this.socket.emit("fireBullet");
+        let coords = this.getPlayerFireCoords(this.player());
+        this.socket.emit("fireBullet", coords);
     }
 
-    private opponentFire = () => {
-        this.createBullet(this.opponent());
+    private opponentFire = (fireCoords) => {
+        this.createBullet(fireCoords);
     }
 
     private drawGrid() {
@@ -200,7 +211,7 @@ class Game {
         player.controls = controls;
         return player;
     }
-    
+
     private create() {
         game.stage.backgroundColor = "#FFFFFF";
         game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -272,6 +283,7 @@ class Game {
 
         if (this.keyboard.isDown(controls.fire) && this.keyboard.justPressed(controls.fire, this.bulletDelay) && playerBullets < this.maxBullets) {
             this.createBullet(player);
+            this.notifyFire();
         }
     }
 

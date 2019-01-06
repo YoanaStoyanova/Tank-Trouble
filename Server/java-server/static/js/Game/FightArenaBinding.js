@@ -32,12 +32,7 @@ ko.bindingHandlers.fightArena = {
         //up, down, left, right
         var keys = [false, false, false, false];
         var moveInterval = null;
-        document.addEventListener("keydown", function (event) {
-            if (event.which == 32) { // space bar
-                console.log("fire made");
-                gameVM.notifyFire();
-            }
-        });
+        //event.which == 32 - space bar: fire event is handled in game.js
         document.addEventListener("keydown", function (event) {
             if (event.which == 38) { //up
                 keys[0] = true;
