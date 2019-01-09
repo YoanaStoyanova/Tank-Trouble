@@ -267,8 +267,8 @@ class Game {
         this.player().controls = control1;
         this.player().bullets = 0;
         this.opponent().bullets = 0;
-        this.player().score = score1;
-        this.opponent().score = score2;
+        this.player().score(score1);
+        this.opponent().score(score2);
         this.bullets.exists = true;
         this.isGameOver(false);
         this.restartScreen(false);

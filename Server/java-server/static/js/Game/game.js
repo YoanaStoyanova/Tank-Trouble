@@ -224,8 +224,8 @@ var Game = /** @class */ (function () {
         this.isGameOver(false);
     };
     Game.prototype.restart = function () {
-        var score1 = this.player().score;
-        var score2 = this.opponent().score;
+        var score1 = this.player().score();
+        var score2 = this.opponent().score();
         this.player().destroy();
         this.opponent().destroy();
         grid.destroy(true, true);
@@ -242,8 +242,8 @@ var Game = /** @class */ (function () {
         this.player().controls = control1;
         this.player().bullets = 0;
         this.opponent().bullets = 0;
-        this.player().score = score1;
-        this.opponent().score = score2;
+        this.player().score(score1);
+        this.opponent().score(score2);
         this.bullets.exists = true;
         this.isGameOver(false);
         this.restartScreen(false);
