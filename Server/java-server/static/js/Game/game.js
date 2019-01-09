@@ -152,10 +152,6 @@ var Game = /** @class */ (function () {
             bullet.destroy();
         }
     };
-    Game.prototype.displayScore = function (isPlayerOne) {
-        this.restartScreen(true);
-        document.getElementById('winner').innerHTML = isPlayerOne ? 'II' : 'I';
-    };
     Game.prototype.stopPlayer = function (player) {
         player.body.velocity.x = 0;
         player.body.velocity.y = 0;
@@ -166,8 +162,23 @@ var Game = /** @class */ (function () {
         this.stopPlayer(this.opponent());
         this.bullets.exists = false;
         this.isGameOver(true);
-        player.isPlayerOne ? this.opponent().score(this.opponent().score() + 1) : this.player().score(this.player().score() + 1);
-        this.displayScore(player.isPlayerOne);
+        if (this.id == 1) {
+            if (player.key == 'player') {
+                this.opponent().score(this.opponent().score() + 1);
+            }
+            else if (player.key == 'opponent') {
+                this.player().score(this.player().score() + 1);
+            }
+        }
+        if (this.id == 2) {
+            if (player.key == 'player') {
+                this.player().score(this.player().score() + 1);
+            }
+            else if (player.key == 'opponent') {
+                this.opponent().score(this.opponent().score() + 1);
+            }
+        }
+        this.restartScreen(true);
     };
     Game.prototype.startGame = function () {
         this.playerReady(true);
