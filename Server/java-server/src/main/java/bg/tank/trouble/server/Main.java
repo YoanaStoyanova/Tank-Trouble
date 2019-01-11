@@ -9,32 +9,37 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.sql.SQLException;
 
 public class Main {
 
-	final static int SOCKET_IO_BOSSTHREADS = 1;
-	final static int SOCKET_IO_WORKERTHREADS = 20;
-    public static void main(String[] args) throws IOException, UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+   final static int SOCKET_IO_BOSSTHREADS = 1;
+   final static int SOCKET_IO_WORKERTHREADS = 20;
 
-        Configuration httpConfig = new Configuration();
+   public static void main(String[] args) throws IOException, UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException, ClassNotFoundException, SQLException {
 
-        httpConfig.setHostname(args[0]);
-        httpConfig.setPort(8080);
+      Configuration httpConfig = new Configuration();
 
-        Configuration socketConfig = new Configuration();
-        socketConfig.setHostname(args[0]);
-        socketConfig.setPort(6969);
-        socketConfig.setKeyStorePassword("mypassword");
+      httpConfig.setHostname(args[0]);
+      httpConfig.setPort(8080);
 
-        String keystoreFilename = "./mycert.keystore";
-        FileInputStream fIn = new FileInputStream(keystoreFilename);
-        socketConfig.setKeyStore(fIn);
+      Configuration socketConfig = new Configuration();
+      socketConfig.setHostname(args[0]);
+      socketConfig.setPort(6969);
+      socketConfig.setKeyStorePassword("mypassword");
 
-        /* set multithreading configuration */
-        socketConfig.setBossThreads(SOCKET_IO_BOSSTHREADS);
-        socketConfig.setWorkerThreads(SOCKET_IO_WORKERTHREADS);
+      String keystoreFilename = "./mycert.keystore";
+      FileInputStream fIn = new FileInputStream(keystoreFilename);
+      socketConfig.setKeyStore(fIn);
 
-        TankTroubleHttpServer httpServer = new TankTroubleHttpServer(httpConfig);
-        TankTroubleSocketServer socketServer = new TankTroubleSocketServer(socketConfig);
-    }
+      /* set multithreading configuration */
+      socketConfig.setBossThreads(SOCKET_IO_BOSSTHREADS);
+      socketConfig.setWorkerThreads(SOCKET_IO_WORKERTHREADS);
+
+      new TankTroubleHttpServer(httpConfig);
+      new TankTroubleSocketServer(socketConfig);
+      DBConnector.initialize();
+
+
+   }
 }

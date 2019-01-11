@@ -1,12 +1,33 @@
 package bg.tank.trouble.server;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+@Entity
+@Table(name = "player")
 public class Player {
 
+    @Column(name = "userId")
+    @Id
     String id;
 
+    @JsonInclude()
+    @Transient
     String email;
 
+    @Column(name = "userName")
     String name;
+
+    @JsonIgnore
+    Integer totalScore;
+
+    Player(){}
 
     public String getId() {
         return id;

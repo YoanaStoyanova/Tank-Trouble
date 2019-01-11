@@ -1,0 +1,6 @@
+#!/bin/bash
+export RDS_HOSTNAME=piss-on-your-lips.cxqikxfgjdlx.eu-west-1.rds.amazonaws.com
+export RDS_PORT=3306
+export RDS_DB_NAME=tanktroubledb
+export RDS_USERNAME=admin
+export RDS_PASSWORD=asdfghjk

@@ -49,6 +49,7 @@ class Game {
                 this.isStartScreen(false);
                 this.gameReady(true);
             });
+            this.socket.on("endOfGame", player => this.endOfGame(player));
         });
     }
     private opponentMove = (data) => {
@@ -172,7 +173,7 @@ class Game {
         player.body.angularVelocity = 0;
     }
 
-    private gameOver(player, bullet) {
+    private endOfGame(player){
         this.stopPlayer(this.player());
         this.stopPlayer(this.opponent());
         this.bullets.exists = false;
@@ -195,6 +196,20 @@ class Game {
             }
         }
         this.restartScreen(true);
+
+    }
+
+    private gameOver(player, bullet) {
+        if(player.key == this.player().key){
+            this.stopPlayer(this.player());
+            this.stopPlayer(this.opponent());
+            this.isGameOver(true);
+            var data = {
+                key: player.key,
+                id: this.id
+            };
+            this.socket.emit("gameOver", data);
+        }
     }
 
     public startGame() {

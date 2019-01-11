@@ -79,6 +79,7 @@ var Game = /** @class */ (function () {
                 _this.isStartScreen(false);
                 _this.gameReady(true);
             });
+            _this.socket.on("endOfGame", function (player) { return _this.endOfGame(player); });
         });
     };
     Game.prototype.drawGrid = function () {
@@ -157,7 +158,7 @@ var Game = /** @class */ (function () {
         player.body.velocity.y = 0;
         player.body.angularVelocity = 0;
     };
-    Game.prototype.gameOver = function (player, bullet) {
+    Game.prototype.endOfGame = function (player) {
         this.stopPlayer(this.player());
         this.stopPlayer(this.opponent());
         this.bullets.exists = false;
@@ -179,6 +180,18 @@ var Game = /** @class */ (function () {
             }
         }
         this.restartScreen(true);
+    };
+    Game.prototype.gameOver = function (player, bullet) {
+        if (player.key == this.player().key) {
+            this.stopPlayer(this.player());
+            this.stopPlayer(this.opponent());
+            this.isGameOver(true);
+            var data = {
+                key: player.key,
+                id: this.id
+            };
+            this.socket.emit("gameOver", data);
+        }
     };
     Game.prototype.startGame = function () {
         this.playerReady(true);
