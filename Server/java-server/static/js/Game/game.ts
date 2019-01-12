@@ -34,7 +34,12 @@ class Game {
     constructor(private socket) {
         this.registerForSocketEvents();
         this.playerName(sessionStorage["name"]);
-        this.socket.emit("playerName", this.playerName());
+        let playerInfo = {
+            "name" : this.playerName(),
+            "id" : sessionStorage["userId"],
+            "totalScore" : sessionStorage["totalScore"]
+        }
+        this.socket.emit("playerName", playerInfo);
     }
 
     private registerForSocketEvents() {

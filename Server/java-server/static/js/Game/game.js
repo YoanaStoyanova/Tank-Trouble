@@ -64,7 +64,12 @@ var Game = /** @class */ (function () {
         };
         this.registerForSocketEvents();
         this.playerName(sessionStorage["name"]);
-        this.socket.emit("playerName", this.playerName());
+        var playerInfo = {
+            "name": this.playerName(),
+            "id": sessionStorage["userId"],
+            "totalScore": sessionStorage["totalScore"]
+        };
+        this.socket.emit("playerName", playerInfo);
     }
     Game.prototype.registerForSocketEvents = function () {
         var _this = this;

@@ -4,6 +4,10 @@ import com.corundumstudio.socketio.Configuration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.*;
 import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 
 import javax.net.ssl.*;
@@ -133,15 +137,23 @@ public class TankTroubleHttpServer {
 
         HttpHandler handler = new HttpHandler() {
             public void handle(HttpExchange httpExchange) throws IOException {
-                System.out.println(httpExchange.getRequestBody());
+                System.out.println("handling login request");
                 ObjectMapper mapper = new ObjectMapper();
+                System.out.println("Before mapper");
                 Player pl = mapper.readValue(httpExchange.getRequestBody(), Player.class);
+                System.out.println("Before extracting");
+                Player dbPlayer = extractPlayerFromDb(pl);
+                System.out.println("After extracting");
                 JSONObject jsonObject = new JSONObject();
-                jsonObject.put("id", pl.id);
-                jsonObject.put("goTo", "gameRoom");
+                if (dbPlayer != null) {
+                    System.out.println("DBPLayer found: ");
+                    dbPlayer.print();
+                    jsonObject.put("id", dbPlayer.getId());
+                    jsonObject.put("totalScore", dbPlayer.getTotalScore());
+                    jsonObject.put("goTo", "gameRoom");
+                }
 
                 String response = jsonObject.toString();
-
                 httpExchange.sendResponseHeaders(200, response.length());
                 OutputStream os = httpExchange.getResponseBody();
                 System.out.println("starting to write after login");
@@ -153,6 +165,32 @@ public class TankTroubleHttpServer {
         };
 
         context.setHandler(handler);
+
+    }
+
+    private Player extractPlayerFromDb(Player player) {
+        Map<String, String> constraints = new HashMap<>();
+        constraints.put("id", player.getId());
+        List<Player> players = null;
+        try {
+            players = DBConnector.selectAllFromWhereAnd(player, constraints);
+            if (players != null && !players.isEmpty()) {
+                System.out.println("Player found in db ");
+                player.print();
+                //Id is primary key, so there must be only one entry
+                return players.get(0);
+            } else {
+                player.setTotalScore(0);
+                DBConnector.saveOrUpdate(player);
+                System.out.println("New player saved to db");
+                player.print();
+                return player;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
 
     }
 

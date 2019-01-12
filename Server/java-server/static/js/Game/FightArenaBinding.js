@@ -34,16 +34,16 @@ ko.bindingHandlers.fightArena = {
         var moveInterval = null;
         //event.which == 32 - space bar: fire event is handled in game.js
         document.addEventListener("keydown", function (event) {
-            if (event.which == 38) {
+            if (event.which == 38) { //up
                 keys[0] = true;
             }
-            if (event.which == 37) {
+            if (event.which == 37) { //left
                 keys[2] = true;
             }
-            if (event.which == 39) {
+            if (event.which == 39) { //right
                 keys[3] = true;
             }
-            if (event.which == 40) {
+            if (event.which == 40) { //down
                 keys[1] = true;
             }
             var isSomeKeyPressed = keys.some(function (val) { return val === true; });
@@ -54,16 +54,16 @@ ko.bindingHandlers.fightArena = {
             }
         });
         document.addEventListener("keyup", function (event) {
-            if (event.which == 38) {
+            if (event.which == 38) { //up
                 keys[0] = false;
             }
-            if (event.which == 37) {
+            if (event.which == 37) { //left
                 keys[2] = false;
             }
-            if (event.which == 39) {
+            if (event.which == 39) { //right
                 keys[3] = false;
             }
-            if (event.which == 40) {
+            if (event.which == 40) { //down
                 keys[1] = false;
             }
             var isSomeKeyPressed = keys.some(function (val) { return val === true; });

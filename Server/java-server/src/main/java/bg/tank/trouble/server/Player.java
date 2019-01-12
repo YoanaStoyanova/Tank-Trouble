@@ -15,19 +15,22 @@ public class Player {
 
     @Column(name = "userId")
     @Id
-    String id;
+    private String id;
 
     @JsonInclude()
     @Transient
-    String email;
+    private String email;
 
     @Column(name = "userName")
-    String name;
+    private String name;
 
-    @JsonIgnore
-    Integer totalScore;
+    private Integer totalScore;
 
     Player(){}
+
+    public Integer getTotalScore() { return totalScore; }
+
+    public void setTotalScore(Integer totalScore) { this.totalScore = totalScore; }
 
     public String getId() {
         return id;
@@ -51,5 +54,9 @@ public class Player {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void print(){
+        System.out.println("userId: " + id + "  email: " + email + "  userName: " + name + " score: " + totalScore );
     }
 }

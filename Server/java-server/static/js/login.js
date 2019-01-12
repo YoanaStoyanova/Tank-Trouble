@@ -15,6 +15,8 @@
                     }).then(res => res.json())
                         .then(response => {
                             sessionStorage.setItem("userId", response.id);
+                            sessionStorage.setItem("totalScore", response.totalScore);
+                            alert(sessionStorage["name"] + " has won " + response.totalScore + " times");
                             document.location = serverAddress + `${response.goTo}`;
                         });
                     //log in at the server and save the response to session storage or local storage

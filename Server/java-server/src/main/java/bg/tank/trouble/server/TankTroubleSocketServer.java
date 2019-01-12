@@ -13,7 +13,7 @@ public class TankTroubleSocketServer {
 
    private SocketIOServer server;
    private Map<UUID, Room> playerToRoom;
-   private Map<UUID, String> playerIdToPlayerName;
+   private Map<UUID, Player> socketClientIdToPlayer;
    private Room currentRoom;
 
    TankTroubleSocketServer(Configuration cfg) {
@@ -29,7 +29,7 @@ public class TankTroubleSocketServer {
 
       currentRoom = new Room(UUID.randomUUID().toString());
       playerToRoom = new HashMap<>();
-      playerIdToPlayerName = new HashMap<>();
+      socketClientIdToPlayer = new HashMap<>();
       server.start();
 
    }
@@ -63,7 +63,7 @@ public class TankTroubleSocketServer {
             } else {
                room.removePlayer(clientId);
             }
-            playerIdToPlayerName.remove(clientId);
+            socketClientIdToPlayer.remove(clientId);
             playerToRoom.remove(clientId);
             /* references to this room should be 0 now so it must get destroyed */
          }
@@ -92,12 +92,12 @@ public class TankTroubleSocketServer {
              */
 
             UUID clientId = socketIOClient.getSessionId();
-            if (playerIdToPlayerName.get(clientId) == null) {
+            if (socketClientIdToPlayer.get(clientId) == null) {
                System.out.println("No record for player " + clientId);
                return;
             }
 
-            currentRoom.addPlayer(clientId, playerIdToPlayerName.get(clientId));
+            currentRoom.addPlayer(clientId, socketClientIdToPlayer.get(clientId).getName());
 
             /*
              * Start from 1 since client side expects starting from 1
@@ -118,8 +118,8 @@ public class TankTroubleSocketServer {
    }
 
    private void addPlayerNameEventListener() {
-      server.addEventListener("playerName", String.class, new DataListener<String>() {
-         public synchronized void onData(SocketIOClient socketIOClient, String playerName, AckRequest ackRequest)
+      server.addEventListener("playerName", Player.class, new DataListener<Player>() {
+         public synchronized void onData(SocketIOClient socketIOClient, Player player, AckRequest ackRequest)
                throws Exception {
             /*
              * The need to remember the names here is coming from the fact that this event
@@ -129,8 +129,8 @@ public class TankTroubleSocketServer {
              * name something is really fkd up
              */
 
-            System.out.println("Got playerName from: " + playerName);
-            playerIdToPlayerName.put(socketIOClient.getSessionId(), playerName);
+            System.out.println("Got playerName from: " + player.getName() + " id: " + player.getId() + " totalScore " + player.getTotalScore());
+            socketClientIdToPlayer.put(socketIOClient.getSessionId(), player);
          }
       });
    }
@@ -167,6 +167,13 @@ public class TankTroubleSocketServer {
             System.out.println("GAME OVEEER");
             System.out.println(deadPlayer.getId() + " " + deadPlayer.getKey());
             Room room = playerToRoom.get(socketIOClient.getSessionId());
+
+            UUID winnerId = room.getOtherPlayers(socketIOClient.getSessionId(), server).get(0);
+            System.out.println("winner uuid: " + winnerId);
+            Player winner = socketClientIdToPlayer.get(winnerId);
+            System.out.println("Winner player info " + winner.getName() +" " +  winner.getTotalScore());
+            winner.setTotalScore(winner.getTotalScore() + 1);
+            DBConnector.saveOrUpdate(winner);
             room.sendBroadCastEvent(server,"endOfGame", deadPlayer);
          }
       });
